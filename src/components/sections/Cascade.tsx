@@ -10,8 +10,8 @@ export function Cascade() {
     const ris3Tok = (i: number) => document.getElementById(`rt${i + 1}`) as SVGCircleElement | null
     const naiveCurve = () => document.getElementById('naive-curve') as SVGPathElement | null
     const naiveSpot = () => document.getElementById('naive-spot') as SVGCircleElement | null
-    const ris3Curve = () => document.getElementById('ris3-curve') as SVGPathElement | null
-    const poolCount = () => document.getElementById('ris3-pool-count')
+    const ris3Curve = () => document.getElementById('rise-curve') as SVGPathElement | null
+    const poolCount = () => document.getElementById('rise-pool-count')
 
     const setClass = (el: Element | null, cls: string) => el?.setAttribute('class', cls)
 
@@ -96,7 +96,7 @@ export function Cascade() {
         }, delay)
       }
 
-      // Phase 2 (RIS3): positions go safe (green) and tokens drop DOWN to redemption pool, no cascade
+      // Phase 2 (RISE): positions go safe (green) and tokens drop DOWN to redemption pool, no cascade
       for (let i = 0; i < 5; i++) {
         const delay = 1700 + i * 420
         setTimeout(() => {
@@ -150,7 +150,7 @@ export function Cascade() {
         .curve-line { stroke: var(--ink-3); stroke-width: 1.2; fill: none; }
         .spot-marker { fill: var(--acc); stroke: var(--bg); stroke-width: 1.5; }
         .token-particle { fill: var(--red); opacity: 0; }
-        .token-particle.ris3 { fill: var(--grn); }
+        .token-particle.rise { fill: var(--grn); }
       `}</style>
 
       <div className="shell">
@@ -161,8 +161,8 @@ export function Cascade() {
             <span className="num">06</span>
           </div>
           <div className="right">
-            <em>What kills naive leverage AMMs.</em> What $RIS3 <span className="acc">structurally prevents.</span>
-            <div className="sect-sub">Liquidation cascades killed Mango ($100M lost). $RIS3's redemption pool routes confiscated collateral <em>out of the curve</em> — adjacent positions don't trigger from a single liquidation. Watch what happens when 5 positions liquidate simultaneously.</div>
+            <em>What kills naive leverage AMMs.</em> What $RISE <span className="acc">structurally prevents.</span>
+            <div className="sect-sub">Liquidation cascades killed Mango ($100M lost). $RISE's redemption pool routes confiscated collateral <em>out of the curve</em> — adjacent positions don't trigger from a single liquidation. Watch what happens when 5 positions liquidate simultaneously.</div>
           </div>
         </div>
 
@@ -190,11 +190,11 @@ export function Cascade() {
               <div className="verdict">Cascade. Protocol drained.<small>Real precedent: Mango ($100M loss)</small></div>
             </div>
 
-            <div className="cas-viz ris3">
-              <div className="head">$RIS3 with redemption pool</div>
+            <div className="cas-viz rise">
+              <div className="head">$RISE with redemption pool</div>
               <div className="name">single-step event</div>
               <svg className="cas-svg" viewBox="0 0 400 320" preserveAspectRatio="xMidYMid meet">
-                <path id="ris3-curve" className="curve-line" d="M 30 90 Q 200 60 370 100" />
+                <path id="rise-curve" className="curve-line" d="M 30 90 Q 200 60 370 100" />
                 <circle className="spot-marker" cx="200" cy="76" r="5" />
                 <text x="30" y="50" fill="#78787f" fontSize="9" fontFamily="JetBrains Mono" letterSpacing="0.1em">CURVE · SPOT</text>
                 {[40, 108, 176, 244, 312].map((tx, i) => (
@@ -206,9 +206,9 @@ export function Cascade() {
                 ))}
                 <rect x="30" y="248" width="340" height="50" rx="2" fill="rgba(52,211,156,0.05)" stroke="#34d39c" strokeWidth="0.8" strokeDasharray="3 3" opacity="0.6" />
                 <text x="200" y="266" fill="#34d39c" fontSize="9" fontFamily="JetBrains Mono" textAnchor="middle" letterSpacing="0.14em">REDEMPTION POOL</text>
-                <text id="ris3-pool-count" x="200" y="285" fill="#78787f" fontSize="9" fontFamily="Fraunces" fontStyle="italic" textAnchor="middle">empty</text>
+                <text id="rise-pool-count" x="200" y="285" fill="#78787f" fontSize="9" fontFamily="Fraunces" fontStyle="italic" textAnchor="middle">empty</text>
                 {[68, 136, 204, 272, 340].map((cx, i) => (
-                  <circle key={i} className="token-particle ris3" id={`rt${i + 1}`} cx={cx} cy="199" r="3" />
+                  <circle key={i} className="token-particle rise" id={`rt${i + 1}`} cx={cx} cy="199" r="3" />
                 ))}
                 <text x="30" y="160" fill="#78787f" fontSize="9" fontFamily="JetBrains Mono" letterSpacing="0.1em">LIQUIDATION THRESHOLDS</text>
               </svg>

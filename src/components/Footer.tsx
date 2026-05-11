@@ -3,7 +3,7 @@ export function Footer() {
     <footer>
       <div className="foot-inner">
         <div>
-          <div className="foot-brand"><span className="sigil">$</span>RIS3</div>
+          <div className="foot-brand"><span className="sigil">$</span>RISE</div>
           <div className="foot-tag">
             A bonding curve that lets you lever it. The pool extends synthetic credit for every leveraged buy. K invariant preserved exactly except at liquidation, which drifts K by precisely the bounty.
           </div>
@@ -38,7 +38,7 @@ export function Footer() {
         </div>
       </div>
       <div className="foot-bottom">
-        <div>$RIS3 v1 · uniswap v4 hook · 60 tests · 3,000 fuzz runs · audited</div>
+        <div>$RISE v1 · uniswap v4 hook · 60 tests · 3,000 fuzz runs · audited</div>
         <div className="sig"><em>long the curve. up to 3x.</em></div>
       </div>
     </footer>

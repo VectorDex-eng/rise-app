@@ -46,7 +46,7 @@ export function Mechanism() {
               <div className="mech-card position">
                 <div className="tag">iii. position</div>
                 <div className="big">ΔT<span className="x">$</span></div>
-                <div className="deet">RIS3 locked as collateral</div>
+                <div className="deet">RISE locked as collateral</div>
                 <div className="ledger">
                   <div className="ll"><span>debt owed</span><strong>0.20 Ξ</strong></div>
                   <div className="ll"><span>liq threshold</span><strong>cv &lt; 0.26 Ξ</strong></div>
@@ -59,7 +59,7 @@ export function Mechanism() {
 
           <Reveal delay={2}>
             <p className="mech-caption">
-              <strong>The split-pricing fix.</strong> Naive leverage AMMs mark collateral at post-buy spot, <em>inflating apparent equity above what could actually be realized on close.</em> $RIS3 marks at curve sell-back, the honest answer to "how much could I close for right now." At the moment of open, sell-back equals exactly L × X. Equity = X = user input. Symmetric.
+              <strong>The split-pricing fix.</strong> Naive leverage AMMs mark collateral at post-buy spot, <em>inflating apparent equity above what could actually be realized on close.</em> $RISE marks at curve sell-back, the honest answer to "how much could I close for right now." At the moment of open, sell-back equals exactly L × X. Equity = X = user input. Symmetric.
             </p>
           </Reveal>
         </div>

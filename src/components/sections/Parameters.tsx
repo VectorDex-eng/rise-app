@@ -11,8 +11,8 @@ export function Parameters() {
         <div className="sect-body">
           <Reveal>
             <div className="params-table">
-              <Param k="token" v="$RIS3" />
-              <Param k="supply" v="1M" sub="RIS3" />
+              <Param k="token" v="$RISE" />
+              <Param k="supply" v="1M" sub="RISE" />
               <Param k="virtual eth (V)" v="20" sub="Ξ" />
               <Param k="leverage" v="2x · 3x" featured />
               <Param k="liq threshold" v="1.3" sub="× debt" />

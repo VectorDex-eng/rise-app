@@ -1,5 +1,5 @@
 import { useReadContracts } from 'wagmi'
-import { ris3HookAbi } from '../abi/Ris3LeverageHook'
+import { riseHookAbi } from '../abi/RiseLeverageHook'
 import { hookAddressFor, isHookConfigured, DEFAULT_CHAIN_ID } from '../lib/config'
 import { phantomEth, spotPrice } from '../lib/curve'
 
@@ -19,13 +19,13 @@ export function usePoolState(chainId: number = DEFAULT_CHAIN_ID) {
   const { data, isLoading, error, refetch } = useReadContracts({
     contracts: configured
       ? [
-          { address: hookAddress, abi: ris3HookAbi, functionName: 'realETH', chainId },
-          { address: hookAddress, abi: ris3HookAbi, functionName: 'totalDebt', chainId },
-          { address: hookAddress, abi: ris3HookAbi, functionName: 'curveTokens', chainId },
-          { address: hookAddress, abi: ris3HookAbi, functionName: 'redemptionTokens', chainId },
-          { address: hookAddress, abi: ris3HookAbi, functionName: 'liquidationDeficit', chainId },
-          { address: hookAddress, abi: ris3HookAbi, functionName: 'protocolFees', chainId },
-          { address: hookAddress, abi: ris3HookAbi, functionName: 'nextPositionId', chainId },
+          { address: hookAddress, abi: riseHookAbi, functionName: 'realETH', chainId },
+          { address: hookAddress, abi: riseHookAbi, functionName: 'totalDebt', chainId },
+          { address: hookAddress, abi: riseHookAbi, functionName: 'curveTokens', chainId },
+          { address: hookAddress, abi: riseHookAbi, functionName: 'redemptionTokens', chainId },
+          { address: hookAddress, abi: riseHookAbi, functionName: 'liquidationDeficit', chainId },
+          { address: hookAddress, abi: riseHookAbi, functionName: 'protocolFees', chainId },
+          { address: hookAddress, abi: riseHookAbi, functionName: 'nextPositionId', chainId },
         ]
       : [],
     query: {

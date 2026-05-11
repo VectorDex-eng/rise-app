@@ -23,7 +23,7 @@ export function phantomEth(
 }
 
 /**
- * Spot price (ETH per RIS3, in wei).
+ * Spot price (ETH per RISE, in wei).
  * spot = phantom_eth / curveTokens
  * Multiplied by 1e18 to preserve precision; result is gwei * 1e9
  */
@@ -33,7 +33,7 @@ export function spotPrice(phantom: bigint, curveTokens: bigint): bigint {
 }
 
 /**
- * Unleveraged buy quote: ETH in → RIS3 out (gross, before fee).
+ * Unleveraged buy quote: ETH in → RISE out (gross, before fee).
  *
  *   ΔT = curveTokens − K / (phantom + ethIn)
  *
@@ -53,7 +53,7 @@ export function quoteBuyGross(
 }
 
 /**
- * Unleveraged sell quote: RIS3 in → ETH out (gross, before fee).
+ * Unleveraged sell quote: RISE in → ETH out (gross, before fee).
  *
  *   ΔE = phantom − K / (curveTokens + ris3In)
  */
@@ -200,14 +200,14 @@ export function formatEth(wei: bigint, decimals: number = 4): string {
 }
 
 /**
- * Format spot price as "gwei / RIS3" for display.
- * spot is in wei (ETH per RIS3, scaled by 1e18 in spotPrice()).
- * That means stored value is wei/ris3 * 1e18, so dividing by 1e9 gives gwei/ris3.
+ * Format spot price as "gwei / RISE" for display.
+ * spot is in wei (ETH per RISE, scaled by 1e18 in spotPrice()).
+ * That means stored value is wei/rise * 1e18, so dividing by 1e9 gives gwei/rise.
  */
 export function formatSpotGwei(spot: bigint): string {
-  // spot is wei_per_RIS3 * 1e18 (over-scaled for precision)
-  // wei_per_RIS3 = spot / 1e18
-  // gwei_per_RIS3 = (spot / 1e18) / 1e9 = spot / 1e27
+  // spot is wei_per_RISE * 1e18 (over-scaled for precision)
+  // wei_per_RISE = spot / 1e18
+  // gwei_per_RISE = (spot / 1e18) / 1e9 = spot / 1e27
   const gweiX1000 = (spot * 1000n) / 10n ** 27n
   const whole = gweiX1000 / 1000n
   const frac = gweiX1000 % 1000n
@@ -216,9 +216,9 @@ export function formatSpotGwei(spot: bigint): string {
 }
 
 /**
- * Format wei as RIS3 with given precision.
+ * Format wei as RISE with given precision.
  */
-export function formatRis3(wei: bigint, decimals: number = 2): string {
+export function formatRise(wei: bigint, decimals: number = 2): string {
   return formatEth(wei, decimals)
 }
 

@@ -1,65 +1,84 @@
-import { useReadContract, useReadContracts } from 'wagmi'
 import { useMemo } from 'react'
-import { ris3HookAbi } from '../abi/Ris3LeverageHook'
-import { hookAddressFor, isHookConfigured, DEFAULT_CHAIN_ID } from '../lib/config'
-
-export type Position = {
-  id: bigint
-  owner: `0x${string}`
-  collateral: bigint
-  debt: bigint
-  openBlock: bigint
-}
-
-/**
- * useUserPositions — fetches all open positions for an owner.
- *
- *   1. positionsOf(owner) returns uint256[]
- *   2. for each ID, positions(id) returns the struct
- */
-export function useUserPositions(owner: `0x${string}` | undefined, chainId: number = DEFAULT_CHAIN_ID) {
-  const hookAddress = hookAddressFor(chainId)
-  const configured = isHookConfigured(chainId)
-
-  const { data: idsData, isLoading: loadingIds } = useReadContract({
-    address: hookAddress,
-    abi: ris3HookAbi,
-    functionName: 'positionsOf',
-    args: owner ? [owner] : undefined,
-    chainId,
-    query: { enabled: configured && !!owner, refetchInterval: 12_000 },
-  })
-
-  const ids = (idsData as bigint[] | undefined) ?? []
-
-  const { data: positionsData, isLoading: loadingPositions } = useReadContracts({
-    contracts: ids.map(id => ({
-      address: hookAddress,
-      abi: ris3HookAbi,
-      functionName: 'positions' as const,
-      args: [id] as const,
-      chainId,
-    })),
-    query: { enabled: configured && ids.length > 0, refetchInterval: 12_000 },
-  })
-
-  const positions = useMemo<Position[]>(() => {
-    if (!positionsData) return []
-    return ids
-      .map((id, idx) => {
-        const r = positionsData[idx]?.result as
-          | readonly [`0x${string}`, bigint, bigint, bigint]
-          | undefined
-        if (!r) return null
-        const [pOwner, collateral, debt, openBlock] = r
-        if (collateral === 0n && debt === 0n) return null // closed
-        return { id, owner: pOwner, collateral, debt, openBlock }
-      })
-      .filter((p): p is Position => p !== null)
-  }, [ids, positionsData])
-
-  return {
-    positions,
-    isLoading: loadingIds || loadingPositions,
+  import { useReadContract, useReadContracts } from 'wagmi'
+  import { hookAddressFor } from '../lib/config'
+  import { riseHookAbi } from '../abi/RiseLeverageHook'
+  
+  export interface UserPosition {
+    id: bigint
+    owner: `0x${string}`
+    openBlock: bigint
+    leverageTier: number
+    collateral: bigint
+    debt: bigint
   }
-}
+
+  /**
+   * Enumerates all positions on the hook from id=1 up to nextPositionId(),
+   * keeps the ones owned by `address`. Cheap for small total-position counts
+   * (a few hundred). For thousands of positions, replace with subgraph/event
+   * indexing.
+   */
+  export function useUserPositions(address: `0x${string}` | undefined, chainId: number) {
+    const hookAddress = hookAddressFor(chainId)
+
+    const { data: nextIdData, isLoading: isLoadingNext } = useReadContract({
+      address: hookAddress,
+      abi: riseHookAbi,
+      functionName: 'nextPositionId',
+      chainId,
+      query: { refetchInterval: 12_000 },
+    })
+
+    const nextId = (nextIdData as bigint | undefined) ?? 1n
+  
+    const contracts = useMemo(() => {
+      const list: any[] = []
+      for (let i = 1n; i < nextId; i++) {
+        list.push({
+          address: hookAddress,
+          abi: riseHookAbi,
+          functionName: 'getPosition',
+          args: [i],
+          chainId,
+        })
+      }
+      return list
+    }, [nextId, hookAddress, chainId])
+
+    const { data: rawPositions, isLoading: isLoadingPositions } = useReadContracts({
+      contracts,
+      query: { enabled: contracts.length > 0, refetchInterval: 12_000 },
+    })
+
+    const positions = useMemo<UserPosition[]>(() => {
+      if (!address || !rawPositions) return []
+      const me = address.toLowerCase()
+      const out: UserPosition[] = []
+      rawPositions.forEach((r, idx) => {
+        if (r.status !== 'success' || !r.result) return
+        const p = r.result as {
+          owner: `0x${string}`
+          openBlock: bigint
+          leverageTier: number
+          collateral: bigint
+          debt: bigint
+        }
+        if (!p.owner || p.owner === '0x0000000000000000000000000000000000000000') return
+        if (p.owner.toLowerCase() !== me) return
+        out.push({
+          id: BigInt(idx + 1),
+          owner: p.owner,
+          openBlock: p.openBlock,
+          leverageTier: Number(p.leverageTier),
+          collateral: p.collateral,
+          debt: p.debt,
+        })
+      })
+      return out
+    }, [rawPositions, address])
+  
+    return {
+      positions,
+      isLoading: isLoadingNext || isLoadingPositions,
+    }
+  }
