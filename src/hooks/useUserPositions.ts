@@ -21,7 +21,7 @@ import { useMemo } from 'react'
   export function useUserPositions(address: `0x${string}` | undefined, chainId: number) {
     const hookAddress = hookAddressFor(chainId)
 
-    const { data: nextIdData, isLoading: isLoadingNext } = useReadContract({
+    const { data: nextIdData, isLoading: isLoadingNext, isError: isErrorNext } = useReadContract({
       address: hookAddress,
       abi: riseHookAbi,
       functionName: 'nextPositionId',
@@ -30,7 +30,7 @@ import { useMemo } from 'react'
     })
 
     const nextId = (nextIdData as bigint | undefined) ?? 1n
-  
+
     const contracts = useMemo(() => {
       const list: any[] = []
       for (let i = 1n; i < nextId; i++) {
@@ -45,7 +45,7 @@ import { useMemo } from 'react'
       return list
     }, [nextId, hookAddress, chainId])
 
-    const { data: rawPositions, isLoading: isLoadingPositions } = useReadContracts({
+    const { data: rawPositions, isLoading: isLoadingPositions, isError: isErrorPositions } = useReadContracts({
       contracts,
       query: { enabled: contracts.length > 0, refetchInterval: 12_000 },
     })
@@ -80,5 +80,6 @@ import { useMemo } from 'react'
     return {
       positions,
       isLoading: isLoadingNext || isLoadingPositions,
+      isError: isErrorNext || isErrorPositions,
     }
   }

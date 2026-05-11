@@ -1,37 +1,36 @@
 import { useEffect, useRef } from 'react'
 
+/**
+ * Cascade prevention — side-by-side animated demo.
+ * Left panel: naive leverage AMM → cascade → curve drained.
+ * Right panel: rise w/ redemption pool → no cascade → K drift bounded by bounty.
+ *
+ * Animation choreography preserved from prior version; only visuals reskinned
+ * to brutalist mono palette (black bg, mono fonts, sharp boxes, bracket labels).
+ */
 export function Cascade() {
   const sectionRef = useRef<HTMLElement>(null)
 
   useEffect(() => {
     const naivePos = (i: number) => document.getElementById(`np${i + 1}`)
     const naiveTok = (i: number) => document.getElementById(`tp${i + 1}`) as SVGCircleElement | null
-    const ris3Pos = (i: number) => document.getElementById(`rp${i + 1}`)
-    const ris3Tok = (i: number) => document.getElementById(`rt${i + 1}`) as SVGCircleElement | null
+    const risePos  = (i: number) => document.getElementById(`rp${i + 1}`)
+    const riseTok  = (i: number) => document.getElementById(`rt${i + 1}`) as SVGCircleElement | null
     const naiveCurve = () => document.getElementById('naive-curve') as SVGPathElement | null
-    const naiveSpot = () => document.getElementById('naive-spot') as SVGCircleElement | null
-    const ris3Curve = () => document.getElementById('rise-curve') as SVGPathElement | null
-    const poolCount = () => document.getElementById('rise-pool-count')
+    const naiveSpot  = () => document.getElementById('naive-spot') as SVGCircleElement | null
+    const riseCurve  = () => document.getElementById('rise-curve') as SVGPathElement | null
+    const poolCount  = () => document.getElementById('rise-pool-count')
 
     const setClass = (el: Element | null, cls: string) => el?.setAttribute('class', cls)
 
     const reset = () => {
       for (let i = 0; i < 5; i++) {
         setClass(naivePos(i), 'position-box healthy')
-        setClass(ris3Pos(i), 'position-box healthy')
-
+        setClass(risePos(i),  'position-box healthy')
         const nt = naiveTok(i)
-        if (nt) {
-          nt.style.transition = 'none'
-          nt.setAttribute('cy', '199')
-          nt.style.opacity = '0'
-        }
-        const rt = ris3Tok(i)
-        if (rt) {
-          rt.style.transition = 'none'
-          rt.setAttribute('cy', '199')
-          rt.style.opacity = '0'
-        }
+        if (nt) { nt.style.transition = 'none'; nt.setAttribute('cy', '199'); nt.style.opacity = '0' }
+        const rt = riseTok(i)
+        if (rt) { rt.style.transition = 'none'; rt.setAttribute('cy', '199'); rt.style.opacity = '0' }
       }
       const nc = naiveCurve()
       if (nc) {
@@ -42,35 +41,34 @@ export function Cascade() {
       if (ns) {
         ns.style.transition = 'none'
         ns.setAttribute('cy', '76')
-        ns.setAttribute('fill', '#ff5a2b')
+        ns.setAttribute('fill', '#00ff85')
       }
-      const rc = ris3Curve()
+      const rc = riseCurve()
       if (rc) {
         rc.style.transition = 'none'
         rc.setAttribute('d', 'M 30 90 Q 200 60 370 100')
       }
       const pc = poolCount()
-      if (pc) pc.textContent = 'empty'
+      if (pc) pc.textContent = 'EMPTY'
 
-      // force reflow so subsequent transitions take effect
       void document.body.offsetHeight
     }
 
-    const ease = 'cubic-bezier(0.4, 0, 0.2, 1)'
+    const ease   = 'cubic-bezier(0.4, 0, 0.2, 1)'
     const easeIn = 'cubic-bezier(0.55, 0.05, 0.45, 0.95)'
 
     const animateCascade = () => {
       reset()
 
-      // Phase 1: all positions fade to warning (smooth color crossfade)
+      // Phase 1: all positions fade to warning
       setTimeout(() => {
         for (let i = 0; i < 5; i++) {
           setClass(naivePos(i), 'position-box warning')
-          setClass(ris3Pos(i), 'position-box warning')
+          setClass(risePos(i),  'position-box warning')
         }
       }, 700)
 
-      // Phase 2 (NAIVE): cascade — each position dies, token flies up into curve, curve sags
+      // Phase 2 NAIVE: cascade — token flies up, curve sags, spot drops red
       for (let i = 0; i < 5; i++) {
         const delay = 1700 + i * 550
         setTimeout(() => {
@@ -91,24 +89,24 @@ export function Cascade() {
           if (ns) {
             ns.style.transition = `cy 0.7s ${ease}, fill 0.5s ${ease}`
             ns.setAttribute('cy', String(76 + (i + 1) * 10))
-            if (i === 4) ns.setAttribute('fill', '#f04848')
+            if (i === 4) ns.setAttribute('fill', '#ff3d3d')
           }
         }, delay)
       }
 
-      // Phase 2 (RISE): positions go safe (green) and tokens drop DOWN to redemption pool, no cascade
+      // Phase 2 RISE: positions go safe (green) + tokens drop down to redemption
       for (let i = 0; i < 5; i++) {
         const delay = 1700 + i * 420
         setTimeout(() => {
-          setClass(ris3Pos(i), 'position-box safe')
-          const tok = ris3Tok(i)
+          setClass(risePos(i), 'position-box safe')
+          const tok = riseTok(i)
           if (tok) {
             tok.style.transition = `cy 0.85s ${easeIn}, opacity 0.35s ${ease}`
             tok.style.opacity = '1'
             tok.setAttribute('cy', '273')
           }
           const pc = poolCount()
-          if (pc) pc.textContent = `${i + 1} / 5 collaterals absorbed`
+          if (pc) pc.textContent = `${i + 1} / 5 COLLATERALS ABSORBED`
         }, delay)
       }
     }
@@ -141,16 +139,22 @@ export function Cascade() {
 
   return (
     <section id="cascade" data-num="06" ref={sectionRef as any}>
+      {/* brutalist palette overrides + animation states */}
       <style>{`
-        .position-box { fill: var(--bg-3); stroke: var(--line-3); stroke-width: 1; transition: fill 0.5s cubic-bezier(0.4,0,0.2,1), stroke 0.5s cubic-bezier(0.4,0,0.2,1), opacity 0.5s cubic-bezier(0.4,0,0.2,1); }
-        .position-box.healthy { fill: var(--bg-3); stroke: var(--line-3); }
-        .position-box.warning { fill: rgba(245,179,66,0.15); stroke: var(--yel); }
-        .position-box.dead { fill: rgba(240,72,72,0.1); stroke: var(--red); opacity: 0.4; }
-        .position-box.safe { fill: rgba(52,211,156,0.08); stroke: var(--grn); }
-        .curve-line { stroke: var(--ink-3); stroke-width: 1.2; fill: none; }
-        .spot-marker { fill: var(--acc); stroke: var(--bg); stroke-width: 1.5; }
-        .token-particle { fill: var(--red); opacity: 0; }
-        .token-particle.rise { fill: var(--grn); }
+        .cas-viz { --cv-bg:#000; --cv-fg:#fff; --cv-mute:#888; --cv-line:#2f2f2f; --cv-grid:#161616;
+                   --cv-buy:#00ff85; --cv-sell:#ff3d3d; --cv-warn:#fbbf24; }
+        .position-box { fill: #050505; stroke: var(--cv-line); stroke-width: 1;
+                        transition: fill 0.5s cubic-bezier(0.4,0,0.2,1),
+                                    stroke 0.5s cubic-bezier(0.4,0,0.2,1),
+                                    opacity 0.5s cubic-bezier(0.4,0,0.2,1); }
+        .position-box.healthy { fill: #050505; stroke: var(--cv-line); }
+        .position-box.warning { fill: #1a1300; stroke: var(--cv-warn); }
+        .position-box.dead    { fill: #1a0808; stroke: var(--cv-sell); opacity: 0.4; }
+        .position-box.safe    { fill: #001a0d; stroke: var(--cv-buy); }
+        .curve-line   { stroke: var(--cv-fg); stroke-width: 1.4; fill: none; }
+        .spot-marker  { fill: var(--cv-buy); stroke: var(--cv-bg); stroke-width: 1.5; }
+        .token-particle      { fill: var(--cv-sell); opacity: 0; }
+        .token-particle.rise { fill: var(--cv-buy); }
       `}</style>
 
       <div className="shell">
@@ -161,79 +165,137 @@ export function Cascade() {
             <span className="num">06</span>
           </div>
           <div className="right">
-            <em>What kills naive leverage AMMs.</em> What $RISE <span className="acc">structurally prevents.</span>
-            <div className="sect-sub">Liquidation cascades killed Mango ($100M lost). $RISE's redemption pool routes confiscated collateral <em>out of the curve</em> — adjacent positions don't trigger from a single liquidation. Watch what happens when 5 positions liquidate simultaneously.</div>
+            <em>What kills naive leverage AMMs.</em> What rise <span className="acc">structurally prevents.</span>
+            <div className="sect-sub">
+              Liquidation cascades killed Mango ($100M). Rise's redemption pool routes confiscated collateral <em>out of the curve</em> — adjacent positions don't trigger from a single liquidation. Watch what happens when 5 positions liquidate at once.
+            </div>
           </div>
         </div>
 
         <div className="sect-body">
           <div className="cascade-anim">
+
+            {/* ─── NAIVE panel ─── */}
             <div className="cas-viz naive">
-              <div className="head">naive leverage AMM</div>
-              <div className="name">death spiral</div>
+              <div className="cas-head">
+                <span className="cas-tag">[ NAIVE LEVERAGE AMM ]</span>
+                <span className="cas-name">DEATH SPIRAL</span>
+              </div>
+
               <svg className="cas-svg" viewBox="0 0 400 320" preserveAspectRatio="xMidYMid meet">
                 <path id="naive-curve" className="curve-line" d="M 30 90 Q 200 60 370 100" />
                 <circle id="naive-spot" className="spot-marker" cx="200" cy="76" r="5" />
-                <text x="30" y="50" fill="#78787f" fontSize="9" fontFamily="JetBrains Mono" letterSpacing="0.1em">CURVE · SPOT</text>
+                <text x="30" y="50" fill="#888" fontSize="9" fontFamily="JetBrains Mono" letterSpacing="0.16em">
+                  CURVE · SPOT
+                </text>
                 {[40, 108, 176, 244, 312].map((tx, i) => (
                   <g key={i} transform={`translate(${tx}, 175)`}>
-                    <rect className="position-box healthy" id={`np${i + 1}`} width="56" height="48" rx="2" />
-                    <text x="28" y="20" fill="#b8b8be" fontSize="9" fontFamily="JetBrains Mono" textAnchor="middle">POS #{i + 1}</text>
-                    <text x="28" y="36" fill="#f0f0f1" fontSize="11" fontFamily="Fraunces" fontStyle="italic" textAnchor="middle">3x</text>
+                    <rect className="position-box healthy" id={`np${i + 1}`} width="56" height="48" />
+                    <text x="28" y="20" fill="#bdbdbd" fontSize="9" fontFamily="JetBrains Mono" textAnchor="middle" letterSpacing="0.08em">
+                      POS-{String(i + 1).padStart(2, '0')}
+                    </text>
+                    <text x="28" y="35" fill="#fff" fontSize="13" fontFamily="JetBrains Mono" fontWeight="600" textAnchor="middle">
+                      3×
+                    </text>
                   </g>
                 ))}
                 {[68, 136, 204, 272, 340].map((cx, i) => (
-                  <circle key={i} className="token-particle" id={`tp${i + 1}`} cx={cx} cy="199" r="3" />
+                  <circle key={i} className="token-particle" id={`tp${i + 1}`} cx={cx} cy="199" r="3.5" />
                 ))}
-                <text x="30" y="160" fill="#78787f" fontSize="9" fontFamily="JetBrains Mono" letterSpacing="0.1em">LIQUIDATION THRESHOLDS</text>
+                <text x="30" y="160" fill="#888" fontSize="9" fontFamily="JetBrains Mono" letterSpacing="0.16em">
+                  LIQUIDATION THRESHOLDS
+                </text>
               </svg>
-              <div className="verdict">Cascade. Protocol drained.<small>Real precedent: Mango ($100M loss)</small></div>
+
+              <div className="cas-verdict cas-verdict-bad">
+                <span className="cas-vd-tag">[ CASCADE ]</span>
+                <span className="cas-vd-text">protocol drained</span>
+                <span className="cas-vd-sub">precedent: Mango ($100M lost)</span>
+              </div>
             </div>
 
+            {/* ─── RISE panel ─── */}
             <div className="cas-viz rise">
-              <div className="head">$RISE with redemption pool</div>
-              <div className="name">single-step event</div>
+              <div className="cas-head">
+                <span className="cas-tag good">[ RIS3 · REDEMPTION POOL ]</span>
+                <span className="cas-name">SINGLE-STEP EVENT</span>
+              </div>
+
               <svg className="cas-svg" viewBox="0 0 400 320" preserveAspectRatio="xMidYMid meet">
                 <path id="rise-curve" className="curve-line" d="M 30 90 Q 200 60 370 100" />
                 <circle className="spot-marker" cx="200" cy="76" r="5" />
-                <text x="30" y="50" fill="#78787f" fontSize="9" fontFamily="JetBrains Mono" letterSpacing="0.1em">CURVE · SPOT</text>
+                <text x="30" y="50" fill="#888" fontSize="9" fontFamily="JetBrains Mono" letterSpacing="0.16em">
+                  CURVE · SPOT
+                </text>
                 {[40, 108, 176, 244, 312].map((tx, i) => (
                   <g key={i} transform={`translate(${tx}, 175)`}>
-                    <rect className="position-box healthy" id={`rp${i + 1}`} width="56" height="48" rx="2" />
-                    <text x="28" y="20" fill="#b8b8be" fontSize="9" fontFamily="JetBrains Mono" textAnchor="middle">POS #{i + 1}</text>
-                    <text x="28" y="36" fill="#f0f0f1" fontSize="11" fontFamily="Fraunces" fontStyle="italic" textAnchor="middle">3x</text>
+                    <rect className="position-box healthy" id={`rp${i + 1}`} width="56" height="48" />
+                    <text x="28" y="20" fill="#bdbdbd" fontSize="9" fontFamily="JetBrains Mono" textAnchor="middle" letterSpacing="0.08em">
+                      POS-{String(i + 1).padStart(2, '0')}
+                    </text>
+                    <text x="28" y="35" fill="#fff" fontSize="13" fontFamily="JetBrains Mono" fontWeight="600" textAnchor="middle">
+                      3×
+                    </text>
                   </g>
                 ))}
-                <rect x="30" y="248" width="340" height="50" rx="2" fill="rgba(52,211,156,0.05)" stroke="#34d39c" strokeWidth="0.8" strokeDasharray="3 3" opacity="0.6" />
-                <text x="200" y="266" fill="#34d39c" fontSize="9" fontFamily="JetBrains Mono" textAnchor="middle" letterSpacing="0.14em">REDEMPTION POOL</text>
-                <text id="rise-pool-count" x="200" y="285" fill="#78787f" fontSize="9" fontFamily="Fraunces" fontStyle="italic" textAnchor="middle">empty</text>
+                {/* redemption pool box */}
+                <rect x="30" y="248" width="340" height="50"
+                      fill="#001a0d" stroke="#00ff85" strokeWidth="0.9" strokeDasharray="3 3" opacity="0.85" />
+                <text x="200" y="266" fill="#00ff85" fontSize="9" fontFamily="JetBrains Mono"
+                      textAnchor="middle" letterSpacing="0.18em">
+                  [ REDEMPTION POOL ]
+                </text>
+                <text id="rise-pool-count" x="200" y="285" fill="#888" fontSize="9" fontFamily="JetBrains Mono"
+                      textAnchor="middle" letterSpacing="0.1em">
+                  EMPTY
+                </text>
                 {[68, 136, 204, 272, 340].map((cx, i) => (
-                  <circle key={i} className="token-particle rise" id={`rt${i + 1}`} cx={cx} cy="199" r="3" />
+                  <circle key={i} className="token-particle rise" id={`rt${i + 1}`} cx={cx} cy="199" r="3.5" />
                 ))}
-                <text x="30" y="160" fill="#78787f" fontSize="9" fontFamily="JetBrains Mono" letterSpacing="0.1em">LIQUIDATION THRESHOLDS</text>
+                <text x="30" y="160" fill="#888" fontSize="9" fontFamily="JetBrains Mono" letterSpacing="0.16em">
+                  LIQUIDATION THRESHOLDS
+                </text>
               </svg>
-              <div className="verdict">Cascade prevented. K drifts by bounty only.<small>Curve unchanged · adjacent positions safe</small></div>
+
+              <div className="cas-verdict cas-verdict-good">
+                <span className="cas-vd-tag good">[ NO CASCADE ]</span>
+                <span className="cas-vd-text">K drifts by bounty only</span>
+                <span className="cas-vd-sub">curve unchanged · adjacent positions safe</span>
+              </div>
+            </div>
+
+          </div>
+
+          {/* ─── proof rows ─── */}
+          <div className="cas-proof">
+            <div className="cas-proof-head">
+              <span className="cas-proof-badge">[ VERIFIED ON-CHAIN ]</span>
+              <span className="cas-proof-test">test_Adversarial_FullCascade_5Positions · sepolia</span>
+            </div>
+            <div className="cas-proof-grid">
+              <ProofRow k="positions opened"      v="5 × 3×"        sub="0.1 Ξ each" />
+              <ProofRow k="trigger"               v="−37%"          sub="50% bag dump" />
+              <ProofRow k="liqs in 1 block"       v="5 / 5"         sub="same block" />
+              <ProofRow k="K drift measured"     v="= bounty × T"  sub="zero rounding" good />
+              <ProofRow k="curveTokens change"   v="0"              sub="cascade blocked" good />
+              <ProofRow k="redemption pool"       v="Σ collaterals" sub="exact match" />
+              <ProofRow k="solvency invariant"   v="HELD"           sub="at every step" good />
+              <ProofRow k="recovery buy"          v="DRAINED"       sub="self-healed" good />
             </div>
           </div>
 
-          <div className="cas-proof">
-            <div className="head">
-              <span className="badge">◆ verified on-chain</span>
-              <span>test_Adversarial_FullCascade_5Positions · sepolia</span>
-            </div>
-            <div className="proof-grid">
-              <div className="proof-item"><div className="k">positions opened</div><div className="v">5 × 3x<small>0.1 Ξ each</small></div></div>
-              <div className="proof-item"><div className="k">trigger</div><div className="v">−37%<small>50% bag dump</small></div></div>
-              <div className="proof-item"><div className="k">liquidations in 1 block</div><div className="v">5 / 5<small>same block</small></div></div>
-              <div className="proof-item"><div className="k">K drift measured</div><div className="v grn">= bounty × T<small>zero rounding</small></div></div>
-              <div className="proof-item"><div className="k">curveTokens change</div><div className="v grn">0<small>cascade blocked</small></div></div>
-              <div className="proof-item"><div className="k">redemption pool</div><div className="v">= Σ collaterals<small>exact match</small></div></div>
-              <div className="proof-item"><div className="k">solvency invariant</div><div className="v grn">held<small>at every step</small></div></div>
-              <div className="proof-item"><div className="k">recovery buy</div><div className="v grn">redemption drained<small>self-healed</small></div></div>
-            </div>
-          </div>
         </div>
       </div>
     </section>
+  )
+}
+
+function ProofRow({ k, v, sub, good }: { k: string; v: string; sub?: string; good?: boolean }) {
+  return (
+    <div className="cas-proof-row">
+      <span className="ck">{k}</span>
+      <span className={`cv ${good ? 'good' : ''}`}>{v}</span>
+      {sub && <span className="csub">{sub}</span>}
+    </div>
   )
 }

@@ -40,7 +40,7 @@ export function TopBar() {
       <header className={`topbar ${scrolled ? 'scrolled' : ''}`}>
         <div className="topbar-inner">
           <a href="#" className="brand" style={{ textDecoration: 'none' }}>
-            <span className="sigil">$</span>RISE<span className="v">v1</span>
+            <span className="sigil">$</span>RIS3<span className="v">v1</span>
           </a>
           <nav className="topnav">
             {navLinks.map(l => (

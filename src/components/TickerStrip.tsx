@@ -12,7 +12,7 @@ export function TickerStrip() {
   const positions = pool.configured ? String(pool.nextPositionId) : '—'
 
   const items = [
-    { l: 'RISE', v: spotStr, ch: pool.configured ? 'live' : null },
+    { l: 'RIS3', v: spotStr, ch: pool.configured ? 'live' : null },
     { l: 'realETH', v: realEth, ch: null },
     { l: 'totalDebt', v: debt, ch: null },
     { l: 'positions', v: positions, ch: null },

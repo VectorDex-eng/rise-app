@@ -17,12 +17,12 @@
   import { mainnet, sepolia } from 'wagmi/chains'
   
   // === addresses ===
-  // Hook contract — Sepolia v1.1 deployed 2026-05-11 (commit a3e8e38; audit fixes + fee withdraw)
-  export const HOOK_ADDRESS_SEPOLIA = '0xb31E487C94672a0d04b091B1dAcf54c443336A88' as const
+  // Hook contract — Sepolia v1.3 deployed 2026-05-11 (transferPosition resets openBlock; safer transferee SameBlock window)
+  export const HOOK_ADDRESS_SEPOLIA = '0x33c4C1500cd681745Dde2936910d1bd0BAEFAa88' as const
   export const HOOK_ADDRESS_MAINNET = '0x0000000000000000000000000000000000000000' as const
 
   // Pool ID — bytes32 — set after deploy
-  export const POOL_ID_SEPOLIA = '0xd9c5403d21ecea45efc6573a3ac72711ee3f428bd9ce57c44834f987ca233d94' as const
+  export const POOL_ID_SEPOLIA = '0x8f9b729f3017c08888d216386019f3015ef06a271eec7afc2514661321108393' as const
   export const POOL_ID_MAINNET = '0x0000000000000000000000000000000000000000000000000000000000000000' as const
 
   // PoolKey constants — needed to build the full PoolKey struct for swap routing.
@@ -46,9 +46,9 @@
   export const SUPPORTED_CHAINS = [sepolia, mainnet] as const
 
   // === protocol constants (immutable, match contract) ===
-  export const V_ETH = 20n * 10n ** 18n            // virtual ETH reserve
+  export const V_ETH = 10n * 10n ** 18n            // virtual ETH reserve — mainnet v1.4 (was 20 on Sepolia v1.3)
   export const TOTAL_SUPPLY = 1_000_000n * 10n ** 18n
-  export const K_CONST = V_ETH * TOTAL_SUPPLY     // 2e43
+  export const K_CONST = V_ETH * TOTAL_SUPPLY     // 1e43
   export const LIQ_THRESHOLD_BPS = 13000n          // 1.3x debt — value < debt * 1.3 triggers
   export const SWAP_FEE_BPS = 50n                  // 0.50%
   export const GLOBAL_DEBT_CAP_BPS = 4000n         // 40% of realETH + V
@@ -58,8 +58,18 @@
   export const BOUNTY_CAP = 10n ** 16n             // 0.01 ETH
 
   // === slippage defaults (in bps) ===
-  export const DEFAULT_SLIPPAGE_BPS = 100n         // 1%
-  export const SLIPPAGE_PRESETS = [50n, 100n, 200n] // 0.5%, 1%, 2%
+  // Raised to 2% for launch — at low pool depth a 0.3Ξ open moves spot ~1.5%,
+  // so 1% slippage was reverting on healthy txs. Drop back to 1% post-launch
+  // once volatility settles.
+  export const DEFAULT_SLIPPAGE_BPS = 200n         // 2%
+  export const SLIPPAGE_PRESETS = [100n, 200n, 500n] // 1%, 2%, 5%
+
+  // === safety constants (mirror contract, used by frontend pre-checks) ===
+  // Reserve for gas on MAX button — leaves enough for the swap tx + safety margin.
+  // ~0.002 ETH covers up to ~200 gwei × 1M gas.
+  export const GAS_RESERVE_WEI = 2n * 10n ** 15n
+  // Contract's MIN_TRADE_ETH (0.01 ETH). Frontend previously used 1e14 (too low).
+  export const MIN_TRADE_ETH_WEI = 10n ** 16n
   
   // === RPC ===
   // Use any public Sepolia RPC. publicnode is free, no API key required.
@@ -73,7 +83,7 @@
   export const WALLETCONNECT_PROJECT_ID = ''
   
   // === Token metadata ===
-  export const TOKEN_SYMBOL = '$RISE'
+  export const TOKEN_SYMBOL = '$RIS3'
   export const TOKEN_DECIMALS = 18
 
   // === resolved per-chain helpers ===
@@ -111,6 +121,6 @@
     const addr = hookAddressFor(chainId)
     return addr !== '0x0000000000000000000000000000000000000000'
   }
-export const RISE_TOKEN_ADDRESS_SEPOLIA = '0x8C5664B9d422Aafe642A3F9cEA5849a5975bA39d' as const
+export const RISE_TOKEN_ADDRESS_SEPOLIA = '0x80D7b377beF7c11dd64E87fe0906de8BA2365dcD' as const
 
 export const POOL_SWAP_TEST_SEPOLIA = '0x9B6b46e2c869aa39918Db7f52f5557FE577B6eEe' as const

@@ -1,4 +1,5 @@
-export const riseTokenAbi = [
+export const riseTokenAbi =
+[
   {
     "type": "constructor",
     "inputs": [
@@ -11,9 +12,37 @@ export const riseTokenAbi = [
         "name": "recipient",
         "type": "address",
         "internalType": "address"
+      },
+      {
+        "name": "pm",
+        "type": "address",
+        "internalType": "address"
+      },
+      {
+        "name": "maxWalletBlocks",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "_admin",
+        "type": "address",
+        "internalType": "address"
       }
     ],
     "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "admin",
+    "inputs": [],
+    "outputs": [
+      {
+        "name": "",
+        "type": "address",
+        "internalType": "address"
+      }
+    ],
+    "stateMutability": "view"
   },
   {
     "type": "function",
@@ -97,6 +126,65 @@ export const riseTokenAbi = [
   },
   {
     "type": "function",
+    "name": "disableMaxWallet",
+    "inputs": [],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "hook",
+    "inputs": [],
+    "outputs": [
+      {
+        "name": "",
+        "type": "address",
+        "internalType": "address"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "isMaxWalletActive",
+    "inputs": [],
+    "outputs": [
+      {
+        "name": "",
+        "type": "bool",
+        "internalType": "bool"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "maxWalletAmount",
+    "inputs": [],
+    "outputs": [
+      {
+        "name": "",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "maxWalletUntil",
+    "inputs": [],
+    "outputs": [
+      {
+        "name": "",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
     "name": "name",
     "inputs": [],
     "outputs": [
@@ -104,6 +192,19 @@ export const riseTokenAbi = [
         "name": "",
         "type": "string",
         "internalType": "string"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "poolManager",
+    "inputs": [],
+    "outputs": [
+      {
+        "name": "",
+        "type": "address",
+        "internalType": "address"
       }
     ],
     "stateMutability": "view"
@@ -205,6 +306,25 @@ export const riseTokenAbi = [
       },
       {
         "name": "value",
+        "type": "uint256",
+        "indexed": false,
+        "internalType": "uint256"
+      }
+    ],
+    "anonymous": false
+  },
+  {
+    "type": "event",
+    "name": "MaxWalletDisabled",
+    "inputs": [
+      {
+        "name": "by",
+        "type": "address",
+        "indexed": true,
+        "internalType": "address"
+      },
+      {
+        "name": "atBlock",
         "type": "uint256",
         "indexed": false,
         "internalType": "uint256"
@@ -325,6 +445,16 @@ export const riseTokenAbi = [
   },
   {
     "type": "error",
+    "name": "MaxWalletExceeded",
+    "inputs": []
+  },
+  {
+    "type": "error",
+    "name": "NotAdmin",
+    "inputs": []
+  },
+  {
+    "type": "error",
     "name": "ZeroRecipient",
     "inputs": []
   },
@@ -333,4 +463,4 @@ export const riseTokenAbi = [
     "name": "ZeroSupply",
     "inputs": []
   }
-] as const;
+] as const

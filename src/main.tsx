@@ -6,6 +6,7 @@ import { ConnectKitProvider } from 'connectkit'
 import { wagmiConfig } from './lib/wagmi'
 import App from './App'
 import './styles/globals.css'
+import './styles/brutalist.css'
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -26,18 +27,18 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
           customTheme={{
             '--ck-font-family': "'JetBrains Mono', ui-monospace, monospace",
             '--ck-border-radius': '0px',
-            '--ck-accent-color': '#ff5a2b',
-            '--ck-accent-text-color': '#0a0a0b',
-            '--ck-modal-background': '#111114',
-            '--ck-body-background': '#111114',
-            '--ck-body-background-secondary': '#16161a',
-            '--ck-body-color': '#f2f2f3',
-            '--ck-body-color-muted': '#b8b8be',
-            '--ck-primary-button-background': '#111114',
+            '--ck-accent-color': '#00ff85',
+            '--ck-accent-text-color': '#000000',
+            '--ck-modal-background': '#050505',
+            '--ck-body-background': '#050505',
+            '--ck-body-background-secondary': '#0a0a0a',
+            '--ck-body-color': '#ffffff',
+            '--ck-body-color-muted': '#888888',
+            '--ck-primary-button-background': '#0a0a0a',
             '--ck-primary-button-border-radius': '0px',
-            '--ck-secondary-button-background': '#16161a',
+            '--ck-secondary-button-background': '#111111',
             '--ck-secondary-button-border-radius': '0px',
-            '--ck-tertiary-button-background': '#16161a',
+            '--ck-tertiary-button-background': '#111111',
           }}
         >
           <App />

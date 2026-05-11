@@ -330,61 +330,190 @@
 .cycle-step .body code { background: var(--bg-2); padding: 1px 5px; font-size: 11px; color: var(--ink); }
 .cycle-step .body strong { color: var(--ink); font-weight: 500; }
 
-/* ============= cascade ============= */
-.cascade-anim { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; margin-bottom: 32px; }
-.cas-viz {
-  border: 1px solid var(--line);
-  background: var(--bg-1);
-  position: relative;
-  overflow: hidden;
-  aspect-ratio: 1 / 0.78;
-  min-height: 360px;
+/* ============================================================
+   cascade (brutalist mono)
+   ============================================================ */
+.cascade-anim {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 22px;
 }
-.cas-viz.naive { border-color: rgba(240,72,72,0.32); }
-.cas-viz.naive::before { content: ""; position: absolute; top: 0; left: 0; bottom: 0; width: 3px; background: var(--red); opacity: 0.55; }
-.cas-viz.ris3 { border-color: rgba(52,211,156,0.32); }
-.cas-viz.ris3::before { content: ""; position: absolute; top: 0; left: 0; bottom: 0; width: 3px; background: var(--grn); opacity: 0.55; }
-.cas-viz .head {
-  position: absolute; top: 22px; left: 28px;
-  font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase; font-weight: 700; z-index: 5;
-}
-.cas-viz.naive .head { color: var(--red); }
-.cas-viz.ris3 .head { color: var(--grn); }
-.cas-viz .name {
-  position: absolute; top: 46px; left: 28px;
-  font-family: var(--serif); font-size: 28px; font-style: italic;
-  letter-spacing: -0.022em; z-index: 5;
-}
-.cas-viz .verdict {
-  position: absolute; bottom: 22px; left: 28px; right: 28px;
-  font-family: var(--serif); font-style: italic; font-size: 17px;
-  letter-spacing: -0.012em; line-height: 1.3; z-index: 5;
-}
-.cas-viz.naive .verdict { color: var(--red); }
-.cas-viz.ris3 .verdict { color: var(--grn); }
-.cas-viz .verdict small { display: block; font-family: var(--mono); font-size: 11px; color: var(--ink-3); font-style: normal; margin-top: 6px; letter-spacing: 0.04em; }
-.cas-svg { width: 100%; height: 100%; }
 
-.cas-proof { border: 1px solid var(--line); padding: 36px 40px; background: var(--bg-1); }
-.cas-proof .head {
-  font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--ink-3);
-  margin-bottom: 26px; display: flex; align-items: center; gap: 14px; font-weight: 600;
+.cas-viz {
+  background: #000;
+  color: #fff;
+  font-family: 'JetBrains Mono', 'IBM Plex Mono', 'SF Mono', 'Menlo', 'Consolas', monospace;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-height: 460px;
+}
+.cas-viz.naive { border: 1px solid #ff3d3d; }
+.cas-viz.rise  { border: 1px solid #00ff85; }
+
+/* corner brackets */
+.cas-viz::before,
+.cas-viz::after {
+  content: '';
+  position: absolute;
+  width: 12px; height: 12px;
+  pointer-events: none;
+}
+.cas-viz.naive::before { top: -1px; left: -1px;
+  border-top: 1px solid #ff3d3d; border-left: 1px solid #ff3d3d; }
+.cas-viz.naive::after  { bottom: -1px; right: -1px;
+  border-bottom: 1px solid #ff3d3d; border-right: 1px solid #ff3d3d; }
+.cas-viz.rise::before  { top: -1px; left: -1px;
+  border-top: 1px solid #00ff85; border-left: 1px solid #00ff85; }
+.cas-viz.rise::after   { bottom: -1px; right: -1px;
+  border-bottom: 1px solid #00ff85; border-right: 1px solid #00ff85; }
+
+.cas-head {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 14px 18px 12px;
+  border-bottom: 1px solid #1f1f1f;
+}
+.cas-tag {
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: #ff3d3d;
+  font-weight: 600;
+}
+.cas-tag.good { color: #00ff85; }
+.cas-name {
+  font-size: 18px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #fff;
+  font-weight: 700;
+}
+
+.cas-svg {
+  flex: 1;
+  width: 100%;
+  display: block;
+  padding: 6px 0;
+}
+
+.cas-verdict {
+  border-top: 1px solid #1f1f1f;
+  padding: 14px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.cas-vd-tag {
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  font-weight: 700;
+  color: #ff3d3d;
+}
+.cas-vd-tag.good { color: #00ff85; }
+.cas-vd-text {
+  font-size: 13px;
+  color: #fff;
+  letter-spacing: 0.04em;
+  text-transform: lowercase;
+}
+.cas-vd-sub {
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  color: #777;
+  text-transform: uppercase;
+}
+
+/* ── proof rows ── */
+.cas-proof {
+  background: #000;
+  border: 1px solid #2f2f2f;
+  padding: 18px 22px;
+  color: #fff;
+  font-family: 'JetBrains Mono', 'IBM Plex Mono', 'SF Mono', monospace;
+  position: relative;
+}
+.cas-proof::before,
+.cas-proof::after {
+  content: '';
+  position: absolute;
+  width: 12px; height: 12px;
+  border: 1px solid #fff;
+  pointer-events: none;
+}
+.cas-proof::before { top: -1px; left: -1px; border-right: none; border-bottom: none; }
+.cas-proof::after  { bottom: -1px; right: -1px; border-left: none; border-top: none; }
+
+.cas-proof-head {
+  display: flex;
+  align-items: center;
+  gap: 14px;
   flex-wrap: wrap;
+  padding-bottom: 12px;
+  margin-bottom: 12px;
+  border-bottom: 1px solid #1f1f1f;
 }
-.cas-proof .head .badge {
-  background: var(--grn-bg); color: var(--grn); padding: 5px 11px; border: 1px solid var(--grn);
-  letter-spacing: 0.1em; font-weight: 700;
+.cas-proof-badge {
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  font-weight: 700;
+  color: #00ff85;
+  border: 1px solid #00ff85;
+  padding: 3px 8px;
 }
-.proof-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 40px; }
-.proof-item .k { color: var(--ink-3); margin-bottom: 10px; font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; font-weight: 600; }
-.proof-item .v {
-  font-family: var(--serif); font-style: italic; color: var(--ink); font-size: 22px;
-  letter-spacing: -0.02em; line-height: 1.15; font-variant-numeric: tabular-nums;
+.cas-proof-test {
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  color: #888;
 }
-.proof-item .v.grn { color: var(--grn); }
-.proof-item .v small {
-  font-family: var(--mono); font-style: normal; font-size: 11px; color: var(--ink-3);
-  display: block; margin-top: 4px; letter-spacing: 0.04em;
+
+.cas-proof-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  border: 1px solid #1f1f1f;
+}
+.cas-proof-row {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  align-items: center;
+  gap: 14px;
+  padding: 10px 14px;
+  border-right: 1px solid #1f1f1f;
+  border-bottom: 1px solid #1f1f1f;
+  font-variant-numeric: tabular-nums;
+}
+.cas-proof-row:nth-child(2n) { border-right: none; }
+.cas-proof-row:nth-last-child(-n+2) { border-bottom: none; }
+
+.cas-proof-row .ck {
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #888;
+}
+.cas-proof-row .cv {
+  font-size: 13px;
+  color: #fff;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
+.cas-proof-row .cv.good { color: #00ff85; }
+.cas-proof-row .csub {
+  font-size: 9px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #555;
+}
+
+@media (max-width: 820px) {
+  .cascade-anim { grid-template-columns: 1fr; gap: 14px; }
+  .cas-proof-grid { grid-template-columns: 1fr; }
+  .cas-proof-row { border-right: none; }
+  .cas-proof-row:last-child { border-bottom: none; }
 }
 
 /* ============= scenarios ============= */
@@ -536,4 +665,154 @@
   .proof-grid { grid-template-columns: 1fr; }
   .contract-inner { padding: 0 16px; }
   .contract-bar .actions a { padding: 9px 14px; font-size: 10px; }
+}
+
+/* ============================================================
+   curve card (sat0-style bonding curve viz)
+   ============================================================ */
+.curve-card {
+  --curve-bg:     #000;
+  --curve-fg:     #fff;
+  --curve-mute:   #777;
+  --curve-line:   #2f2f2f;
+  --curve-grid:   #161616;
+  --curve-accent: #00ff85;
+
+  background: var(--curve-bg);
+  color: var(--curve-fg);
+  border: 1px solid var(--curve-line);
+  padding: 18px 22px 20px;
+  font-family: 'JetBrains Mono', 'IBM Plex Mono', 'SF Mono', 'Menlo', 'Consolas', monospace;
+  position: relative;
+}
+.curve-card::before,
+.curve-card::after {
+  content: '';
+  position: absolute;
+  width: 12px; height: 12px;
+  border: 1px solid var(--curve-fg);
+  pointer-events: none;
+}
+.curve-card::before { top: -1px; left: -1px; border-right: none; border-bottom: none; }
+.curve-card::after  { bottom: -1px; right: -1px; border-left: none; border-top: none; }
+
+.curve-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding-bottom: 12px;
+  margin-bottom: 6px;
+  border-bottom: 1px solid var(--curve-line);
+}
+.curve-ttl {
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--curve-fg);
+}
+.curve-now {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  color: var(--curve-mute);
+  letter-spacing: 0.06em;
+}
+.curve-now .kk { color: var(--curve-mute); font-size: 9px; letter-spacing: 0.18em; }
+.curve-now .vv { color: var(--curve-fg); }
+.curve-now .div { color: var(--curve-mute); }
+
+.curve-svg-wrap { position: relative; }
+.curve-svg { display: block; width: 100%; height: auto; margin: 4px 0; cursor: crosshair; }
+
+/* hover tooltip — pinned to top-right of plot area, follows the crosshair x */
+.curve-tip {
+  position: absolute;
+  top: 38px;
+  min-width: 160px;
+  background: #050505;
+  border: 1px solid #fbbf24;
+  padding: 8px 10px 9px;
+  font-family: var(--curve-mono, 'JetBrains Mono', monospace);
+  font-size: 10px;
+  font-variant-numeric: tabular-nums;
+  color: var(--curve-fg);
+  pointer-events: none;
+  z-index: 2;
+  letter-spacing: 0.04em;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  max-width: 200px;
+}
+.curve-tip .ct-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+}
+.curve-tip .ct-row > span:first-child {
+  color: var(--curve-mute);
+  font-size: 9px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+.curve-tip .ct-row.mult {
+  margin-top: 3px;
+  padding-top: 5px;
+  border-top: 1px dashed var(--curve-line);
+}
+.curve-tip .ct-row.mult > span:last-child {
+  color: #fbbf24;
+  font-weight: 600;
+}
+
+/* milestone strip — compact 5-cell row, replaces the old table */
+.curve-stones {
+  margin-top: 14px;
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  border: 1px solid var(--curve-line);
+}
+.curve-stones .cs-cell {
+  padding: 10px 12px;
+  border-right: 1px solid var(--curve-line);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-variant-numeric: tabular-nums;
+}
+.curve-stones .cs-cell:last-child { border-right: none; }
+.curve-stones .cs-pct {
+  font-size: 9px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--curve-mute);
+  font-weight: 600;
+}
+.curve-stones .cs-eth {
+  font-size: 10px;
+  color: var(--curve-fg);
+}
+.curve-stones .cs-px {
+  font-size: 12px;
+  color: var(--curve-fg);
+}
+.curve-stones .cs-mult {
+  font-size: 11px;
+  color: var(--curve-accent);
+  font-weight: 600;
+}
+
+@media (max-width: 640px) {
+  .curve-card { padding: 14px 14px 16px; }
+  .curve-now { font-size: 10px; }
+  .curve-now .kk { font-size: 8px; }
+  .curve-stones { grid-template-columns: repeat(2, 1fr); }
+  .curve-stones .cs-cell { border-right: none; border-bottom: 1px solid var(--curve-line); }
+  .curve-stones .cs-cell:nth-child(odd) { border-right: 1px solid var(--curve-line); }
+  .curve-stones .cs-cell:nth-last-child(-n+2) { border-bottom: none; }
+  .curve-tip { font-size: 9px; min-width: 140px; }
 }

@@ -11,7 +11,7 @@ export const wagmiConfig = createConfig(
       [mainnet.id]: http(RPC_MAINNET),
     },
     walletConnectProjectId: WALLETCONNECT_PROJECT_ID,
-    appName: '$RISE',
+    appName: '$RIS3',
     appDescription: 'Long the curve. Up to 3x.',
     appUrl: 'https://rise.xyz',
   })
