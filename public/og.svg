@@ -1,0 +1,71 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" width="1200" height="630">
+  <defs>
+    <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+      <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#0d0d0d" stroke-width="1"/>
+    </pattern>
+    <pattern id="hatch" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+      <line x1="0" y1="0" x2="0" y2="8" stroke="#00ff85" stroke-width="0.8" opacity="0.10"/>
+    </pattern>
+  </defs>
+
+  <!-- bg -->
+  <rect width="1200" height="630" fill="#000000"/>
+  <rect width="1200" height="630" fill="url(#grid)"/>
+
+  <!-- corner brackets (top-left) -->
+  <path d="M 40 40 L 40 90 M 40 40 L 90 40" stroke="#ffffff" stroke-width="2" fill="none"/>
+  <!-- bottom-right -->
+  <path d="M 1160 590 L 1160 540 M 1160 590 L 1110 590" stroke="#ffffff" stroke-width="2" fill="none"/>
+
+  <!-- top tag -->
+  <text x="80" y="115" font-family="'JetBrains Mono','SF Mono',Menlo,monospace" font-size="20" letter-spacing="6" fill="#888888">
+    [ UNISWAP · V4 · HOOK ]
+  </text>
+
+  <!-- big brand -->
+  <text x="80" y="265" font-family="'JetBrains Mono','SF Mono',Menlo,monospace" font-weight="700" font-size="180" letter-spacing="-2" fill="#ffffff">
+    ris3
+  </text>
+
+  <!-- tagline -->
+  <text x="80" y="345" font-family="'JetBrains Mono','SF Mono',Menlo,monospace" font-size="36" letter-spacing="2" fill="#ffffff">
+    LONG THE CURVE
+  </text>
+  <text x="80" y="395" font-family="'JetBrains Mono','SF Mono',Menlo,monospace" font-size="36" letter-spacing="2" fill="#00ff85">
+    UP TO 3X.
+  </text>
+
+  <!-- hockey-stick curve top-right -->
+  <g transform="translate(680, 130)">
+    <rect x="0" y="0" width="460" height="290" fill="none" stroke="#1f1f1f" stroke-width="1"/>
+    <!-- area fill -->
+    <path d="M 0 290 L 0 280 L 80 270 L 160 250 L 220 220 L 270 180 L 310 130 L 340 80 L 360 40 L 380 20 L 400 10 L 420 5 L 440 3 L 460 2 L 460 290 Z" fill="url(#hatch)"/>
+    <!-- curve -->
+    <path d="M 0 280 L 80 270 L 160 250 L 220 220 L 270 180 L 310 130 L 340 80 L 360 40 L 380 20 L 400 10 L 420 5 L 440 3 L 460 2" fill="none" stroke="#00ff85" stroke-width="3"/>
+    <!-- you-are-here dot -->
+    <circle cx="140" cy="255" r="7" fill="#00ff85"/>
+    <circle cx="140" cy="255" r="14" fill="none" stroke="#00ff85" stroke-width="1.5" opacity="0.5"/>
+    <text x="160" y="245" font-family="'JetBrains Mono',monospace" font-size="14" letter-spacing="2" fill="#00ff85">[ YOU ARE HERE ]</text>
+    <!-- axis labels -->
+    <text x="0" y="-15" font-family="'JetBrains Mono',monospace" font-size="12" letter-spacing="3" fill="#888888">PRICE × SUPPLY</text>
+  </g>
+
+  <!-- bottom stats strip -->
+  <g transform="translate(0, 510)">
+    <line x1="80" y1="0" x2="1120" y2="0" stroke="#1f1f1f" stroke-width="1"/>
+    <text x="80" y="40" font-family="'JetBrains Mono',monospace" font-size="13" letter-spacing="3" fill="#555555">FEE</text>
+    <text x="80" y="70" font-family="'JetBrains Mono',monospace" font-size="22" letter-spacing="1" fill="#ffffff">50 bps</text>
+
+    <text x="280" y="40" font-family="'JetBrains Mono',monospace" font-size="13" letter-spacing="3" fill="#555555">LEVERAGE</text>
+    <text x="280" y="70" font-family="'JetBrains Mono',monospace" font-size="22" letter-spacing="1" fill="#ffffff">2× · 3×</text>
+
+    <text x="500" y="40" font-family="'JetBrains Mono',monospace" font-size="13" letter-spacing="3" fill="#555555">SUPPLY</text>
+    <text x="500" y="70" font-family="'JetBrains Mono',monospace" font-size="22" letter-spacing="1" fill="#ffffff">1,000,000</text>
+
+    <text x="750" y="40" font-family="'JetBrains Mono',monospace" font-size="13" letter-spacing="3" fill="#555555">CHAIN</text>
+    <text x="750" y="70" font-family="'JetBrains Mono',monospace" font-size="22" letter-spacing="1" fill="#ffffff">ETH · L1</text>
+
+    <text x="950" y="40" font-family="'JetBrains Mono',monospace" font-size="13" letter-spacing="3" fill="#555555">URL</text>
+    <text x="950" y="70" font-family="'JetBrains Mono',monospace" font-size="22" letter-spacing="1" fill="#00ff85">ris3.xyz</text>
+  </g>
+</svg>

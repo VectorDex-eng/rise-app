@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <rect width="64" height="64" fill="#000"/>
+  <path d="M 4 4 L 4 18 M 4 4 L 18 4" stroke="#fff" stroke-width="2" fill="none"/>
+  <path d="M 60 60 L 60 46 M 60 60 L 46 60" stroke="#fff" stroke-width="2" fill="none"/>
+  <text x="32" y="42" font-family="'JetBrains Mono',monospace" font-weight="700" font-size="22" text-anchor="middle" fill="#00ff85">r3</text>
+</svg>
