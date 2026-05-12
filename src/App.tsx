@@ -1,6 +1,7 @@
 import { TradeWidget } from './components/TradeWidget'
 import { TopBar } from './components/TopBar'
 import { TickerStrip } from './components/TickerStrip'
+import { TreasuryHero } from './components/TreasuryHero'
 import { Banner } from './components/Banner'
 import { Mechanism } from './components/sections/Mechanism'
 import { Parameters } from './components/sections/Parameters'
@@ -36,6 +37,8 @@ export default function App() {
               Trade ris3 like any token, or open <em>2× / 3×</em> against vault ETH. The hook skims
               1% of every swap to the vault — <em>the protocol earns from every trade</em>.
             </p>
+
+            <TreasuryHero />
 
             <div className="hero-actions">
               <a href="/paper.html" className="btn">Yellow paper ↗</a>

@@ -17,7 +17,7 @@ export function TickerStrip() {
     { l: 'available', v: available, ch: null },
     { l: 'open positions', v: positions, ch: null },
     { l: 'hook fee', v: '1% ETH', ch: '→ vault' },
-    { l: 'liq threshold', v: '1.5×', ch: null },
+    { l: 'liq threshold', v: '1.4×', ch: null },
     { l: 'min position', v: '0.05 Ξ', ch: null },
     { l: 'admin keys', v: 'none', ch: 'immutable' },
   ]
