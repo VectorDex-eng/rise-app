@@ -165,8 +165,8 @@ export function TradeWidget() {
       </div>
 
       <div className="widget-tabs" role="tablist">
-        <button role="tab" className={`widget-tab ${tab === 'mint' ? 'active' : ''}`}  onClick={() => setTab('mint')}>Mint</button>
-        <button role="tab" className={`widget-tab ${tab === 'burn' ? 'active' : ''}`}  onClick={() => setTab('burn')}>Burn</button>
+        <button role="tab" className={`widget-tab ${tab === 'mint' ? 'active' : ''}`}  onClick={() => setTab('mint')}>Buy</button>
+        <button role="tab" className={`widget-tab ${tab === 'burn' ? 'active' : ''}`}  onClick={() => setTab('burn')}>Sell</button>
         <button role="tab" className={`widget-tab ${tab === 'open' ? 'active' : ''}`}  onClick={() => setTab('open')}>Open</button>
         <button role="tab" className={`widget-tab ${tab === 'close' ? 'active' : ''}`} onClick={() => setTab('close')}>Pos</button>
       </div>
@@ -200,7 +200,7 @@ export function TradeWidget() {
       </div>
 
       <div className="widget-foot">
-        <span>fee 50bps · slip {Number(slippage) / 100}%</span>
+        <span>fee 2% · slip {Number(slippage) / 100}%</span>
         <span className="kbd-hints">
           <kbd>M</kbd><kbd>B</kbd><kbd>O</kbd><kbd>P</kbd>
         </span>
@@ -338,7 +338,7 @@ function MintTab({ pool, address, slippage, setSlippage, configured, disabled, c
       <div className="quote">
         <div className="qr"><span className="qk">receive</span><span className="qv">{formatRise(netOut)} <span className="unit">RIS3</span></span></div>
         <div className="qr"><span className="qk">min after slip</span><span className="qv">{formatRise(minOut)} <span className="unit">RIS3</span></span></div>
-        <div className="qr"><span className="qk">fee 50bps</span><span className="qv">
+        <div className="qr"><span className="qk">fee 2%</span><span className="qv">
           {formatRise(grossOut - netOut, 4)} <span className="unit">RIS3</span>
           <button className="add-mm" onClick={() => addRise(watchAsset, riseTokenAddressFor(chainId))} title="Add RIS3 to wallet">+ wallet</button>
         </span></div>
@@ -351,7 +351,7 @@ function MintTab({ pool, address, slippage, setSlippage, configured, disabled, c
           : insufficient ? 'insufficient ETH'
           : isPending ? 'sign in wallet…'
           : isConfirming ? 'confirming…'
-          : 'Mint RIS3'}
+          : 'Buy RIS3'}
         {canSubmit && <span className="arrow">&gt;&gt;</span>}
       </button>
 
@@ -455,7 +455,7 @@ function BurnTab({ pool, address, slippage, setSlippage, configured, disabled, c
     : isConfirming            ? 'confirming…'
     : needsErc20Approve       ? '1/2  Approve RIS3'
     : needsPermit2Approve     ? '2/2  Permit2 grant'
-    :                           'Burn RIS3'
+    :                           'Sell RIS3'
 
   return (
     <>
@@ -473,7 +473,7 @@ function BurnTab({ pool, address, slippage, setSlippage, configured, disabled, c
       <div className="quote">
         <div className="qr"><span className="qk">receive</span><span className="qv">{formatEth(netOut, 6)} <span className="unit">ETH</span></span></div>
         <div className="qr"><span className="qk">min after slip</span><span className="qv">{formatEth(minOut, 6)} <span className="unit">ETH</span></span></div>
-        <div className="qr"><span className="qk">fee 50bps</span><span className="qv">
+        <div className="qr"><span className="qk">fee 2%</span><span className="qv">
           {formatEth(grossOut - netOut, 6)} <span className="unit">ETH</span>
           <button className="add-mm" onClick={() => addRise(watchAsset, riseTokenAddressFor(chainId))}>+ wallet</button>
         </span></div>
