@@ -5,16 +5,18 @@ export function Footer() {
         <div>
           <div className="foot-brand"><span className="sigil">$</span>RIS3</div>
           <div className="foot-tag">
-            A bonding curve that lets you lever it. The pool extends synthetic credit for every leveraged buy. K invariant preserved exactly except at liquidation, which drifts K by precisely the bounty.
+            A fixed-supply ERC20 on Uniswap V4 with a treasury-backed leverage vault. Trade like any
+            token, or open 2× / 3× longs against vault ETH. Hook skims 1% of every swap to the vault.
+            No admin keys, no upgradability.
           </div>
         </div>
         <div className="foot-col">
           <h5>protocol</h5>
           <ul>
             <li><a href="#mechanism">mechanism</a></li>
-            <li><a href="#k-invariant">K invariant</a></li>
-            <li><a href="#cascade">cascade prevention</a></li>
-            <li><a href="#scenarios">adversarial scenarios</a></li>
+            <li><a href="#parameters">parameters</a></li>
+            <li><a href="#liquidation">liquidation</a></li>
+            <li><a href="#stack">the stack</a></li>
             <li><a href="/paper.html">yellow paper ↗</a></li>
           </ul>
         </div>
@@ -29,17 +31,17 @@ export function Footer() {
         <div className="foot-col">
           <h5>venue</h5>
           <ul>
-            <li>uniswap v4 hook</li>
+            <li>uniswap v4 (mainnet)</li>
             <li>L1 ethereum</li>
-            <li>50 bps swap fee</li>
-            <li>2x · 3x long</li>
-            <li>min 0.05 Ξ</li>
+            <li>1% hook fee → vault</li>
+            <li>2× · 3× long</li>
+            <li>min position 0.05 Ξ</li>
           </ul>
         </div>
       </div>
       <div className="foot-bottom">
-        <div>$RIS3 v1 · uniswap v4 hook · 60 tests · 3,000 fuzz runs · audited</div>
-        <div className="sig"><em>long the curve. up to 3x.</em></div>
+        <div>$RIS3 v1 · plain ERC20 + V4 fee hook + leverage vault · no admin keys</div>
+        <div className="sig"><em>token + leverage. up to 3x.</em></div>
       </div>
     </footer>
   )

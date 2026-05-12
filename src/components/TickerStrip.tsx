@@ -1,26 +1,25 @@
 import { usePoolState } from '../hooks/usePoolState'
-import { formatEth, formatSpotGwei } from '../lib/curve'
+import { formatEth } from '../lib/curve'
 
 export function TickerStrip() {
   const pool = usePoolState()
 
-  // Build ticker items from live state, with sensible fallbacks
-  const spotStr = pool.configured ? `${formatSpotGwei(pool.spot)} gwei` : '— gwei'
-  const realEth = pool.configured ? `${formatEth(pool.realETH, 4)} Ξ` : '— Ξ'
+  const treasury = pool.configured ? `${formatEth(pool.treasuryEth, 4)} Ξ` : '— Ξ'
   const debt = pool.configured ? `${formatEth(pool.totalDebt, 4)} Ξ` : '— Ξ'
-  const headroom = pool.configured ? `${formatEth(pool.debtHeadroom, 2)} Ξ` : '— Ξ'
-  const positions = pool.configured ? String(pool.nextPositionId) : '—'
+  const available = pool.configured ? `${formatEth(pool.availableTreasury, 4)} Ξ` : '— Ξ'
+  const positions = pool.configured ? String(pool.nextPositionId - 1n) : '—'
 
   const items = [
-    { l: 'RIS3', v: spotStr, ch: pool.configured ? 'live' : null },
-    { l: 'realETH', v: realEth, ch: null },
-    { l: 'totalDebt', v: debt, ch: null },
-    { l: 'positions', v: positions, ch: null },
-    { l: 'headroom', v: headroom, ch: null },
-    { l: 'tests', v: '60/60', ch: 'passing' },
-    { l: 'fuzz runs', v: '3,000', ch: null },
-    { l: 'audit', v: 'no critical', ch: 'clean' },
-    { l: 'K drift', v: 'bounty only', ch: null },
+    { l: 'RIS3', v: 'on uniswap v4', ch: pool.configured ? 'live' : null },
+    { l: 'leverage', v: '2× · 3×', ch: null },
+    { l: 'treasury', v: treasury, ch: null },
+    { l: 'total debt', v: debt, ch: null },
+    { l: 'available', v: available, ch: null },
+    { l: 'open positions', v: positions, ch: null },
+    { l: 'hook fee', v: '1% ETH', ch: '→ vault' },
+    { l: 'liq threshold', v: '1.5×', ch: null },
+    { l: 'min position', v: '0.05 Ξ', ch: null },
+    { l: 'admin keys', v: 'none', ch: 'immutable' },
   ]
 
   return (

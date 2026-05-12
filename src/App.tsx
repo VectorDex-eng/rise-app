@@ -3,13 +3,9 @@ import { TopBar } from './components/TopBar'
 import { TickerStrip } from './components/TickerStrip'
 import { Banner } from './components/Banner'
 import { Mechanism } from './components/sections/Mechanism'
-import { KInvariant } from './components/sections/KInvariant'
 import { Parameters } from './components/sections/Parameters'
-import { PriceImpact } from './components/sections/PriceImpact'
-import { Lifecycle } from './components/sections/Lifecycle'
-import { Cascade } from './components/sections/Cascade'
-import { Scenarios } from './components/sections/Scenarios'
-import { Limits } from './components/sections/Limits'
+import { Liquidation } from './components/sections/Liquidation'
+import { Stack } from './components/sections/Stack'
 import { ContractBar } from './components/ContractBar'
 import { Footer } from './components/Footer'
 
@@ -26,20 +22,20 @@ export default function App() {
             <div className="hero-meta">
               <span className="badge">v1</span>
               <span className="div"></span>
-              <span>long-only on-chain leverage</span>
+              <span>token + optional leverage</span>
               <span className="div"></span>
-              <span>uniswap v4 hook</span>
+              <span>uniswap v4</span>
             </div>
 
             <h1 className="headline">
-              Long the <span className="em">curve.</span>
+              <span className="em">ris3</span>
               <br />
               Up to <span className="x">3x</span>
               <span className="dot"></span>
             </h1>
 
             <p className="hero-tagline">
-              A bonding curve <em>that lets you lever it.</em> <strong>The pool extends synthetic credit.</strong> The curve is the protocol. The pool is your counterparty.
+              A token with built-in leverage. <em>Buy ris3 like any ERC20</em> — or open a 2× / 3× position via the on-chain vault. <strong>The vault provides the debt.</strong> You provide the conviction.
             </p>
 
             <div className="hero-actions">
@@ -56,13 +52,9 @@ export default function App() {
 
       <Banner />
       <Mechanism />
-      <KInvariant />
       <Parameters />
-      <PriceImpact />
-      <Lifecycle />
-      <Cascade />
-      <Scenarios />
-      <Limits />
+      <Liquidation />
+      <Stack />
       <ContractBar />
       <Footer />
     </>

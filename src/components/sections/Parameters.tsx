@@ -2,10 +2,10 @@ import { SectHead, Reveal } from './SectHead'
 
 export function Parameters() {
   return (
-    <section data-num="03" style={{ padding: '80px 0' }}>
+    <section data-num="02" style={{ padding: '80px 0' }}>
       <div className="shell">
-        <SectHead num="03" label="parameters" numLabel="03">
-          <span style={{ fontSize: 32 }}><em>Set at deploy.</em> <em>Never change.</em></span>
+        <SectHead num="02" label="parameters" numLabel="02">
+          <span style={{ fontSize: 32 }}><em>Immutable.</em> <em>On chain.</em></span>
         </SectHead>
 
         <div className="sect-body">
@@ -13,15 +13,15 @@ export function Parameters() {
             <div className="params-table">
               <Param k="token" v="$RIS3" />
               <Param k="supply" v="1M" sub="RIS3" />
-              <Param k="virtual eth (V)" v="20" sub="Ξ" />
               <Param k="leverage" v="2x · 3x" featured />
-              <Param k="liq threshold" v="1.3" sub="× debt" />
+              <Param k="hook fee" v="1%" sub="every swap → vault" />
+              <Param k="lp fee" v="1%" sub="V4 tier" />
+              <Param k="open fee" v="0.5%" sub="leveraged size" />
+              <Param k="liq threshold" v="1.5" sub="× debt" />
               <Param k="liq bounty" v="1%" sub="cap 0.01Ξ" />
-              <Param k="global debt cap" v="40%" sub="pool" />
-              <Param k="swap fee" v="50" sub="bps" />
-              <Param k="interest" v="0%" sub="v1" />
               <Param k="min position" v="0.05" sub="Ξ" />
-              <Param k="same-block guard" v="strict" />
+              <Param k="same-block close" v="blocked" />
+              <Param k="vault admin" v="owner only" sub="treasury" />
               <Param k="chain" v="ETH" sub="L1" />
             </div>
           </Reveal>

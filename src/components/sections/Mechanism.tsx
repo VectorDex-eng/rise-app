@@ -6,9 +6,13 @@ export function Mechanism() {
     <section id="mechanism" data-num="01">
       <div className="shell">
         <SectHead num="01" label="the mechanism" numLabel="01">
-          <em>One transaction.</em> The pool extends credit, the curve takes the leveraged buy, your collateral gets locked. <span className="acc">K invariant preserved exactly.</span>
+          <em>One pool. One price.</em> ris3 trades like any standard ERC20 — and the vault makes
+          <span className="acc"> 2× / 3× leverage available on top.</span>
           <div className="sect-sub">
-            The pool treats the curve as if L × X ETH entered. Your X grows realETH directly. The remaining (L − 1) × X is tracked as synthetic debt — no actual ETH is loaned. The curve just <em>prices</em> as if the leveraged amount entered.
+            The token is plain: fixed supply, no transfer hooks, no admin. The pool is a standard
+            Uniswap V4 pool with a single light hook that takes <strong>1% of every swap as ETH</strong>
+            for the protocol vault. Leverage is fully opt-in via a separate vault contract that loans
+            ETH from its own treasury — every leverage open is a clean single buy on the chart.
           </div>
         </SectHead>
 
@@ -18,10 +22,10 @@ export function Mechanism() {
               <div className="mech-card user">
                 <div className="tag">i. you</div>
                 <div className="big">0.10<span className="x">Ξ</span></div>
-                <div className="deet">→ msg.value · pick leverage</div>
+                <div className="deet">→ vault.open(3, minCollateral)</div>
                 <div className="ledger">
-                  <div className="ll"><span>tier</span><strong>3x long</strong></div>
-                  <div className="ll"><span>capital at risk</span><strong>0.10 Ξ</strong></div>
+                  <div className="ll"><span>margin in</span><strong>0.10 Ξ</strong></div>
+                  <div className="ll"><span>leverage</span><strong>3× long</strong></div>
                   <div className="ll"><span>exposure</span><strong>0.30 Ξ</strong></div>
                 </div>
               </div>
@@ -29,28 +33,28 @@ export function Mechanism() {
               <div className="mech-bridge"><span className="arrow">↦</span></div>
 
               <div className="mech-card pool">
-                <div className="tag">ii. the curve</div>
-                <div className="big">K<span className="x">=2×10⁴³</span></div>
-                <div className="deet">phantom_eth × curveTokens · invariant</div>
+                <div className="tag">ii. the vault</div>
+                <div className="big">treasury<span className="x">Ξ</span></div>
+                <div className="deet">debt + your margin → single swap</div>
                 <div className="ledger">
-                  <div className="ll"><span>realETH</span><span className="green">+ 0.10 Ξ</span></div>
-                  <div className="ll"><span>totalDebt</span><span className="green">+ 0.20 Ξ</span></div>
-                  <div className="ll"><span>curveTokens</span><span className="red">− ΔT</span></div>
-                  <div className="ll"><span>phantom_eth</span><span className="green">+ 0.30 Ξ</span></div>
+                  <div className="ll"><span>treasury lends</span><span className="green">0.20 Ξ</span></div>
+                  <div className="ll"><span>open fee</span><span className="green">0.0015 Ξ</span></div>
+                  <div className="ll"><span>buy via UR</span><span className="green">0.2985 Ξ → ris3</span></div>
+                  <div className="ll"><span>chart impact</span><span className="green">+3× buy</span></div>
                 </div>
-                <div className="invariant">K preserved · exactly</div>
+                <div className="invariant">clean single swap · no sell-then-buy</div>
               </div>
 
               <div className="mech-bridge"><span className="arrow">↦</span></div>
 
               <div className="mech-card position">
                 <div className="tag">iii. position</div>
-                <div className="big">ΔT<span className="x">$</span></div>
-                <div className="deet">RIS3 locked as collateral</div>
+                <div className="big">ris3<span className="x">locked</span></div>
+                <div className="deet">collateral · debt · openBlock</div>
                 <div className="ledger">
+                  <div className="ll"><span>collateral</span><strong>ris3 from buy</strong></div>
                   <div className="ll"><span>debt owed</span><strong>0.20 Ξ</strong></div>
-                  <div className="ll"><span>liq threshold</span><strong>cv &lt; 0.26 Ξ</strong></div>
-                  <div className="ll"><span>bounty</span><strong>1% (cap 0.01 Ξ)</strong></div>
+                  <div className="ll"><span>liq threshold</span><strong>cv &lt; 1.5× debt</strong></div>
                   <div className="ll"><span>owner</span><strong>msg.sender</strong></div>
                 </div>
               </div>
@@ -59,7 +63,11 @@ export function Mechanism() {
 
           <Reveal delay={2}>
             <p className="mech-caption">
-              <strong>The split-pricing fix.</strong> Naive leverage AMMs mark collateral at post-buy spot, <em>inflating apparent equity above what could actually be realized on close.</em> $RIS3 marks at curve sell-back, the honest answer to "how much could I close for right now." At the moment of open, sell-back equals exactly L × X. Equity = X = user input. Symmetric.
+              <strong>Why this is honest leverage.</strong> Most "leveraged AMMs" use virtual reserves
+              that hide trades from indexers, or sell-then-buy round trips that bait the chart. ris3 does
+              neither — <em>every leverage event is a real swap against real LP</em>. If a 3× open pumps
+              the chart, that's because real ETH (your margin + vault's debt) bought real ris3 from real
+              liquidity. DEXScreener, Sigma, every sniper bot sees what's actually happening.
             </p>
           </Reveal>
         </div>
