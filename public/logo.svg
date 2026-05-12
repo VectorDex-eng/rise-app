@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <!-- black bg, square -->
+  <rect width="512" height="512" fill="#000000"/>
+
+  <!-- corner brackets -->
+  <path d="M 24 24 L 24 60 M 24 24 L 60 24" stroke="#ffffff" stroke-width="3" fill="none"/>
+  <path d="M 488 488 L 488 452 M 488 488 L 452 488" stroke="#ffffff" stroke-width="3" fill="none"/>
+
+  <!-- ris3 wordmark, centered -->
+  <text x="256" y="270"
+        font-family="'JetBrains Mono','SF Mono',Menlo,monospace"
+        font-weight="800"
+        font-size="180"
+        letter-spacing="-4"
+        text-anchor="middle"
+        fill="#ffffff">ris</text>
+  <text x="372" y="270"
+        font-family="'JetBrains Mono','SF Mono',Menlo,monospace"
+        font-weight="800"
+        font-size="180"
+        letter-spacing="-4"
+        text-anchor="middle"
+        fill="#00ff85">3</text>
+
+  <!-- tagline underneath -->
+  <text x="256" y="335"
+        font-family="'JetBrains Mono','SF Mono',Menlo,monospace"
+        font-weight="500"
+        font-size="22"
+        letter-spacing="6"
+        text-anchor="middle"
+        fill="#888888">LONG · LEVERED</text>
+
+  <!-- subtle baseline -->
+  <line x1="80" y1="370" x2="432" y2="370" stroke="#1a1a1a" stroke-width="1"/>
+  <text x="256" y="400"
+        font-family="'JetBrains Mono',monospace"
+        font-size="14"
+        letter-spacing="4"
+        text-anchor="middle"
+        fill="#555555">UNISWAP V4</text>
+</svg>

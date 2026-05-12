@@ -1,0 +1,72 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1500 500" width="1500" height="500">
+  <defs>
+    <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+      <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#0d0d0d" stroke-width="1"/>
+    </pattern>
+    <pattern id="hatch" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+      <line x1="0" y1="0" x2="0" y2="8" stroke="#00ff85" stroke-width="0.8" opacity="0.10"/>
+    </pattern>
+  </defs>
+
+  <!-- bg -->
+  <rect width="1500" height="500" fill="#000000"/>
+  <rect width="1500" height="500" fill="url(#grid)"/>
+
+  <!-- corner brackets -->
+  <path d="M 40 40 L 40 100 M 40 40 L 100 40" stroke="#ffffff" stroke-width="2" fill="none"/>
+  <path d="M 1460 460 L 1460 400 M 1460 460 L 1400 460" stroke="#ffffff" stroke-width="2" fill="none"/>
+
+  <!-- left zone: brand + tagline -->
+  <text x="80" y="115" font-family="'JetBrains Mono',monospace" font-size="18" letter-spacing="6" fill="#888888">
+    [ UNISWAP · V4 · HOOK ]
+  </text>
+
+  <text x="80" y="270" font-family="'JetBrains Mono',monospace" font-weight="800" font-size="160" letter-spacing="-3" fill="#ffffff">
+    ris<tspan fill="#00ff85">3</tspan>
+  </text>
+
+  <text x="80" y="335" font-family="'JetBrains Mono',monospace" font-size="32" letter-spacing="3" fill="#ffffff">
+    LONG.<tspan dx="20" fill="#ffffff">LEVERED.</tspan>
+  </text>
+  <text x="80" y="385" font-family="'JetBrains Mono',monospace" font-size="32" letter-spacing="3" fill="#00ff85">
+    ONCHAIN.
+  </text>
+
+  <!-- right zone: hockey stick chart -->
+  <g transform="translate(880, 80)">
+    <rect x="0" y="0" width="540" height="290" fill="none" stroke="#1f1f1f" stroke-width="1"/>
+    <!-- x/y axis labels -->
+    <text x="0" y="-15" font-family="'JetBrains Mono',monospace" font-size="11" letter-spacing="3" fill="#666666">PRICE</text>
+    <text x="540" y="310" font-family="'JetBrains Mono',monospace" font-size="11" letter-spacing="3" text-anchor="end" fill="#666666">SUPPLY DEPLETED →</text>
+    <!-- area fill under curve -->
+    <path d="M 0 290 L 0 280 L 100 270 L 200 250 L 270 220 L 330 180 L 380 130 L 420 80 L 450 40 L 470 20 L 490 10 L 510 5 L 530 3 L 540 2 L 540 290 Z" fill="url(#hatch)"/>
+    <!-- the curve itself -->
+    <path d="M 0 280 L 100 270 L 200 250 L 270 220 L 330 180 L 380 130 L 420 80 L 450 40 L 470 20 L 490 10 L 510 5 L 530 3 L 540 2" fill="none" stroke="#00ff85" stroke-width="3"/>
+    <!-- live dot -->
+    <circle cx="160" cy="258" r="6" fill="#00ff85"/>
+    <circle cx="160" cy="258" r="13" fill="none" stroke="#00ff85" stroke-width="1.5" opacity="0.5"/>
+  </g>
+
+  <!-- bottom stats strip -->
+  <g transform="translate(0, 430)">
+    <line x1="80" y1="0" x2="1420" y2="0" stroke="#1f1f1f" stroke-width="1"/>
+
+    <text x="80" y="30" font-family="'JetBrains Mono',monospace" font-size="11" letter-spacing="3" fill="#555555">HOOK FEE</text>
+    <text x="80" y="60" font-family="'JetBrains Mono',monospace" font-size="18" letter-spacing="1" fill="#ffffff">1% ETH</text>
+
+    <text x="280" y="30" font-family="'JetBrains Mono',monospace" font-size="11" letter-spacing="3" fill="#555555">LEVERAGE</text>
+    <text x="280" y="60" font-family="'JetBrains Mono',monospace" font-size="18" letter-spacing="1" fill="#ffffff">2× · 3×</text>
+
+    <text x="480" y="30" font-family="'JetBrains Mono',monospace" font-size="11" letter-spacing="3" fill="#555555">SUPPLY</text>
+    <text x="480" y="60" font-family="'JetBrains Mono',monospace" font-size="18" letter-spacing="1" fill="#ffffff">1,000,000</text>
+
+    <text x="720" y="30" font-family="'JetBrains Mono',monospace" font-size="11" letter-spacing="3" fill="#555555">LIQ</text>
+    <text x="720" y="60" font-family="'JetBrains Mono',monospace" font-size="18" letter-spacing="1" fill="#ffffff">1.4× debt</text>
+
+    <text x="920" y="30" font-family="'JetBrains Mono',monospace" font-size="11" letter-spacing="3" fill="#555555">CHAIN</text>
+    <text x="920" y="60" font-family="'JetBrains Mono',monospace" font-size="18" letter-spacing="1" fill="#ffffff">ETH · L1</text>
+
+    <text x="1150" y="30" font-family="'JetBrains Mono',monospace" font-size="11" letter-spacing="3" fill="#555555">URL</text>
+    <text x="1150" y="60" font-family="'JetBrains Mono',monospace" font-size="18" letter-spacing="1" fill="#00ff85">ris3.xyz</text>
+  </g>
+</svg>
