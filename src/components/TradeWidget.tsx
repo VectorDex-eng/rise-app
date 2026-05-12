@@ -158,10 +158,10 @@ export function TradeWidget() {
       </div>
 
       <div className="widget-stats">
-        <div className="st"><span className="st-k">price</span><span className="st-v">{stats.price}</span></div>
-        <div className="st"><span className="st-k">fdv</span>  <span className="st-v">{formatEthShort(stats.fdvWei)} Ξ</span></div>
-        <div className="st"><span className="st-k">tvl</span>  <span className="st-v">{formatEthShort(stats.tvlEth)} Ξ</span></div>
-        <div className="st"><span className="st-k">open</span> <span className="st-v">{stats.openCt}</span></div>
+        <div className="st"><span className="st-k">treasury</span><span className="st-v">{formatEthShort(pool.treasuryEth)} Ξ</span></div>
+        <div className="st"><span className="st-k">debt</span><span className="st-v">{formatEthShort(pool.totalDebt)} Ξ</span></div>
+        <div className="st"><span className="st-k">available</span><span className="st-v">{formatEthShort(pool.availableTreasury)} Ξ</span></div>
+        <div className="st"><span className="st-k">your pos</span><span className="st-v">{stats.openCt}</span></div>
       </div>
 
       <div className="widget-tabs" role="tablist">

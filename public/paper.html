@@ -332,7 +332,7 @@
     proceeds × 10000 &lt; debt × 14000
   </div>
   <p>
-    That is, <code>proceeds &lt; 1.5 × debt</code>. Otherwise <code>liquidate</code> reverts with
+    That is, <code>proceeds &lt; 1.4 × debt</code>. Otherwise <code>liquidate</code> reverts with
     <code>PositionHealthy()</code>. The 1.4× threshold leaves a 40% headroom over the debt — under
     normal market conditions, liquidators can act long before a position would actually leave the vault
     underwater.

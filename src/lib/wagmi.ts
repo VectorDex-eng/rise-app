@@ -11,7 +11,7 @@ export const wagmiConfig = createConfig(
     },
     walletConnectProjectId: WALLETCONNECT_PROJECT_ID,
     appName: '$RIS3',
-    appDescription: 'Long the curve. Up to 3x.',
+    appDescription: 'Long. Levered. Onchain.',
     appUrl: 'https://ris3.xyz',
   })
 )
