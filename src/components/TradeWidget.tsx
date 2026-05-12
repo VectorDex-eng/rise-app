@@ -10,7 +10,7 @@ import { poolSwapTestAbi } from '../abi/PoolSwapTest'
 import {
   hookAddressFor, isHookConfigured, chainName, DEFAULT_CHAIN_ID,
   SLIPPAGE_PRESETS, DEFAULT_SLIPPAGE_BPS, MIN_POSITION, LEVERAGE_TIERS,
-  RISE_TOKEN_ADDRESS_SEPOLIA, POOL_SWAP_TEST_SEPOLIA, TOTAL_SUPPLY,
+  riseTokenAddressFor, POOL_SWAP_TEST_SEPOLIA, TOTAL_SUPPLY,
   GAS_RESERVE_WEI, MIN_TRADE_ETH_WEI,
 } from '../lib/config'
 import {
@@ -57,8 +57,8 @@ function formatEthShort(wei: bigint): string {
   return formatEth(wei, 3)
 }
 
-function addRise(watchAsset: ReturnType<typeof useWatchAsset>['watchAsset']) {
-  watchAsset({ type: 'ERC20', options: { address: RISE_TOKEN_ADDRESS_SEPOLIA, symbol: 'RIS3', decimals: 18 } })
+function addRise(watchAsset: ReturnType<typeof useWatchAsset>['watchAsset'], tokenAddr: `0x${string}`) {
+  watchAsset({ type: 'ERC20', options: { address: tokenAddr, symbol: 'RIS3', decimals: 18 } })
 }
 
 /// Treat user-rejected wallet prompts differently from chain reverts.
@@ -294,7 +294,7 @@ function MintTab({ pool, address, slippage, setSlippage, configured, disabled, c
       abi: poolSwapTestAbi,
       functionName: 'swap',
       args: [
-        { currency0: '0x0000000000000000000000000000000000000000', currency1: RISE_TOKEN_ADDRESS_SEPOLIA, fee: 10000, tickSpacing: 60, hooks: hookAddress },
+        { currency0: '0x0000000000000000000000000000000000000000', currency1: riseTokenAddressFor(chainId), fee: 10000, tickSpacing: 60, hooks: hookAddress },
         { zeroForOne: true, amountSpecified: -ethIn, sqrtPriceLimitX96: 4295128740n },
         { takeClaims: false, settleUsingBurn: false },
         '0x',
@@ -327,7 +327,7 @@ function MintTab({ pool, address, slippage, setSlippage, configured, disabled, c
         <div className="qr"><span className="qk">min after slip</span><span className="qv">{formatRise(minOut)} <span className="unit">RIS3</span></span></div>
         <div className="qr"><span className="qk">fee 50bps</span><span className="qv">
           {formatRise(grossOut - netOut, 4)} <span className="unit">RIS3</span>
-          <button className="add-mm" onClick={() => addRise(watchAsset)} title="Add RIS3 to wallet">+ wallet</button>
+          <button className="add-mm" onClick={() => addRise(watchAsset, riseTokenAddressFor(chainId))} title="Add RIS3 to wallet">+ wallet</button>
         </span></div>
       </div>
 
@@ -356,13 +356,13 @@ function BurnTab({ pool, address, slippage, setSlippage, configured, disabled, c
   const [input, setInput] = useState('')
 
   const { data: _rb } = useReadContract({
-    address: RISE_TOKEN_ADDRESS_SEPOLIA, abi: riseTokenAbi, functionName: 'balanceOf',
+    address: riseTokenAddressFor(chainId), abi: riseTokenAbi, functionName: 'balanceOf',
     args: address ? [address] : undefined, chainId, query: { enabled: !!address, refetchInterval: 12_000 },
   })
   const riseBalance = ((_rb ?? 0n) as bigint)
 
   const { data: _al, refetch: refetchAllowance } = useReadContract({
-    address: RISE_TOKEN_ADDRESS_SEPOLIA, abi: riseTokenAbi, functionName: 'allowance',
+    address: riseTokenAddressFor(chainId), abi: riseTokenAbi, functionName: 'allowance',
     args: address ? [address, POOL_SWAP_TEST_SEPOLIA] : undefined, chainId, query: { enabled: !!address },
   })
   const allowance = ((_al ?? 0n) as bigint)
@@ -381,7 +381,7 @@ function BurnTab({ pool, address, slippage, setSlippage, configured, disabled, c
   useEffect(() => { if (isSuccess) { qc.invalidateQueries(); refetchAllowance() } }, [isSuccess, qc, refetchAllowance])
 
   const onApprove = () => writeContract({
-    address: RISE_TOKEN_ADDRESS_SEPOLIA, abi: riseTokenAbi, functionName: 'approve',
+    address: riseTokenAddressFor(chainId), abi: riseTokenAbi, functionName: 'approve',
     args: [POOL_SWAP_TEST_SEPOLIA, 2n ** 256n - 1n], chainId,
   })
 
@@ -390,7 +390,7 @@ function BurnTab({ pool, address, slippage, setSlippage, configured, disabled, c
     writeContract({
       address: POOL_SWAP_TEST_SEPOLIA, abi: poolSwapTestAbi, functionName: 'swap',
       args: [
-        { currency0: '0x0000000000000000000000000000000000000000', currency1: RISE_TOKEN_ADDRESS_SEPOLIA, fee: 10000, tickSpacing: 60, hooks: hookAddress },
+        { currency0: '0x0000000000000000000000000000000000000000', currency1: riseTokenAddressFor(chainId), fee: 10000, tickSpacing: 60, hooks: hookAddress },
         { zeroForOne: false, amountSpecified: -riseIn, sqrtPriceLimitX96: 1461446703485210103287273052203988822378723970341n },
         { takeClaims: false, settleUsingBurn: false },
         '0x',
@@ -422,7 +422,7 @@ function BurnTab({ pool, address, slippage, setSlippage, configured, disabled, c
         <div className="qr"><span className="qk">min after slip</span><span className="qv">{formatEth(minOut, 6)} <span className="unit">ETH</span></span></div>
         <div className="qr"><span className="qk">fee 50bps</span><span className="qv">
           {formatEth(grossOut - netOut, 6)} <span className="unit">ETH</span>
-          <button className="add-mm" onClick={() => addRise(watchAsset)}>+ wallet</button>
+          <button className="add-mm" onClick={() => addRise(watchAsset, riseTokenAddressFor(chainId))}>+ wallet</button>
         </span></div>
       </div>
 
@@ -525,7 +525,7 @@ function OpenTab({ pool, address, slippage, setSlippage, configured, disabled, c
           <div className="qr"><span className="qk">drop to liq</span><span className="qv red">{priceQuote ? priceQuote.liqDropPct.toFixed(1) + '%' : '—'}</span></div>
           <div className="qr"><span className="qk">min coll (slip)</span><span className="qv">
             {formatRise(minCollateral)} <span className="unit">RIS3</span>
-            <button className="add-mm" onClick={() => addRise(watchAsset)}>+ wallet</button>
+            <button className="add-mm" onClick={() => addRise(watchAsset, riseTokenAddressFor(chainId))}>+ wallet</button>
           </span></div>
           {wouldExceedDebtCap && (
             <div className="qr"><span className="qk red">debt cap</span><span className="qv red">
