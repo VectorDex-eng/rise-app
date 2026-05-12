@@ -2,7 +2,7 @@ import { SectHead, Reveal } from './SectHead'
 
 export function Liquidation() {
   return (
-    <section data-num="03" style={{ padding: '80px 0' }}>
+    <section id="liquidation" data-num="03" style={{ padding: '80px 0' }}>
       <div className="shell">
         <SectHead num="03" label="liquidation" numLabel="03">
           <em>Underwater positions get closed.</em> Anyone can call <span className="acc">liquidate()</span>

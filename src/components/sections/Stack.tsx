@@ -6,7 +6,7 @@ import {
 
 export function Stack() {
   return (
-    <section data-num="04" style={{ padding: '80px 0' }}>
+    <section id="stack" data-num="04" style={{ padding: '80px 0' }}>
       <div className="shell">
         <SectHead num="04" label="the stack" numLabel="04">
           <em>Three contracts.</em> All immutable. <span className="acc">All on Etherscan.</span>

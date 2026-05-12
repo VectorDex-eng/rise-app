@@ -2,7 +2,7 @@ import { SectHead, Reveal } from './SectHead'
 
 export function Parameters() {
   return (
-    <section data-num="02" style={{ padding: '80px 0' }}>
+    <section id="parameters" data-num="02" style={{ padding: '80px 0' }}>
       <div className="shell">
         <SectHead num="02" label="parameters" numLabel="02">
           <span style={{ fontSize: 32 }}><em>Immutable.</em> <em>On chain.</em></span>
