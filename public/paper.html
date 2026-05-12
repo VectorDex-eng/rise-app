@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ris3 — yellow paper</title>
+  <meta name="description" content="Technical specification of the ris3 protocol: token, V4 pool, ETH-fee hook, leverage vault." />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #050505;
+      --fg: #fff;
+      --muted: #888;
+      --line: #1a1a1a;
+      --acc: #00ff85;
+      --red: #ff4d4d;
+    }
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0;
+      padding: 0;
+      background: var(--bg);
+      color: var(--fg);
+      font-family: 'JetBrains Mono', ui-monospace, monospace;
+      font-weight: 400;
+      line-height: 1.6;
+      font-size: 15px;
+    }
+    .page {
+      max-width: 760px;
+      margin: 0 auto;
+      padding: 60px 24px 120px;
+    }
+    .head {
+      border-bottom: 1px solid var(--line);
+      padding-bottom: 24px;
+      margin-bottom: 40px;
+    }
+    .kicker {
+      font-size: 11px;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 12px;
+    }
+    h1 {
+      font-size: 36px;
+      font-weight: 800;
+      margin: 0 0 8px;
+      letter-spacing: -0.5px;
+    }
+    .sub {
+      color: var(--muted);
+      font-size: 14px;
+      margin: 0;
+    }
+    h2 {
+      font-size: 22px;
+      font-weight: 700;
+      margin: 56px 0 16px;
+      border-left: 3px solid var(--acc);
+      padding-left: 14px;
+      letter-spacing: -0.3px;
+    }
+    h3 {
+      font-size: 16px;
+      font-weight: 600;
+      margin: 32px 0 12px;
+      color: var(--fg);
+      letter-spacing: 0;
+    }
+    p { margin: 0 0 16px; color: #ccc; }
+    p strong { color: var(--fg); }
+    p em { color: var(--acc); font-style: normal; }
+    ul { padding-left: 20px; margin: 0 0 16px; }
+    li { color: #ccc; margin-bottom: 6px; }
+    code {
+      background: #0e0e0e;
+      border: 1px solid var(--line);
+      padding: 2px 6px;
+      border-radius: 0;
+      font-size: 13px;
+      color: var(--acc);
+    }
+    .box {
+      border: 1px solid var(--line);
+      background: #0a0a0a;
+      padding: 16px 20px;
+      margin: 20px 0;
+    }
+    .box.warn { border-color: #4a3a1a; }
+    .box.warn::before { content: '⚠ '; color: #ffae00; font-weight: 700; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 16px 0;
+      font-size: 13px;
+    }
+    th, td {
+      text-align: left;
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--line);
+    }
+    th {
+      color: var(--muted);
+      font-weight: 600;
+      text-transform: uppercase;
+      font-size: 11px;
+      letter-spacing: 1.5px;
+    }
+    td:last-child { color: var(--acc); }
+    .addr {
+      font-family: 'JetBrains Mono', ui-monospace, monospace;
+      font-size: 12px;
+      color: var(--acc);
+      word-break: break-all;
+    }
+    a { color: var(--acc); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    .back {
+      display: inline-block;
+      margin-bottom: 16px;
+      font-size: 13px;
+      color: var(--muted);
+    }
+    .formula {
+      background: #0e0e0e;
+      border: 1px solid var(--line);
+      padding: 20px;
+      margin: 16px 0;
+      font-family: 'JetBrains Mono', ui-monospace, monospace;
+      font-size: 14px;
+      color: var(--acc);
+      overflow-x: auto;
+    }
+    hr {
+      border: none;
+      border-top: 1px solid var(--line);
+      margin: 48px 0;
+    }
+    .toc {
+      border: 1px solid var(--line);
+      padding: 16px 20px;
+      margin-bottom: 40px;
+      background: #0a0a0a;
+    }
+    .toc-title {
+      font-size: 11px;
+      letter-spacing: 2px;
+      color: var(--muted);
+      text-transform: uppercase;
+      margin-bottom: 10px;
+    }
+    .toc ol {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      counter-reset: toc;
+    }
+    .toc li {
+      counter-increment: toc;
+      margin-bottom: 4px;
+      font-size: 13px;
+    }
+    .toc li::before {
+      content: counter(toc, decimal-leading-zero) ' · ';
+      color: var(--muted);
+    }
+  </style>
+</head>
+<body>
+<div class="page">
+
+  <a href="/" class="back">← back to ris3.xyz</a>
+
+  <div class="head">
+    <div class="kicker">yellow paper · v1.0</div>
+    <h1>ris3</h1>
+    <p class="sub">Long. Levered. Onchain. — Technical specification of the ris3 protocol.</p>
+  </div>
+
+  <div class="toc">
+    <div class="toc-title">contents</div>
+    <ol>
+      <li><a href="#overview">Overview</a></li>
+      <li><a href="#token">Token</a></li>
+      <li><a href="#pool">Pool & Hook</a></li>
+      <li><a href="#vault">Leverage Vault</a></li>
+      <li><a href="#mechanics">Position mechanics</a></li>
+      <li><a href="#liquidation">Liquidation</a></li>
+      <li><a href="#fees">Fee structure</a></li>
+      <li><a href="#risks">Known risks</a></li>
+      <li><a href="#addresses">Deployed addresses</a></li>
+    </ol>
+  </div>
+
+  <h2 id="overview">01 · Overview</h2>
+  <p>
+    ris3 is a fixed-supply ERC20 token on Ethereum mainnet paired with a Uniswap V4 pool and a separate
+    leverage vault. Three contracts. No admin keys. No upgradability. No transfer hooks on the token.
+  </p>
+  <p>
+    The system is intentionally simple. A regular user buys or sells ris3 like any other ERC20 — through
+    a Uniswap V4 pool with real concentrated liquidity. Pool indexers (DEXScreener, Sigma, Banana, etc.)
+    see the pair as a standard V4 token and route swaps normally.
+  </p>
+  <p>
+    A separate vault contract holds an ETH treasury and offers <em>2× or 3× spot leverage</em> to anyone
+    who calls <code>open()</code>. The vault borrows from its own treasury to fund the leveraged buy,
+    locks the resulting tokens as collateral, and tracks the debt. There is no external lending market,
+    no interest model, no funding rate. Just an open fee on entry and the standard pool fees on the
+    swaps themselves.
+  </p>
+
+  <h2 id="token">02 · Token</h2>
+  <p>
+    <code>Ris3Token</code> is a vanilla OpenZeppelin ERC20. The constructor mints the entire fixed
+    supply (1,000,000 RIS3, 18 decimals) to the deployer in one call. No transfer hooks. No max-wallet.
+    No admin role. No mint function. The contract is immutable post-deploy.
+  </p>
+  <ul>
+    <li><strong>Symbol:</strong> RIS3</li>
+    <li><strong>Decimals:</strong> 18</li>
+    <li><strong>Total supply:</strong> 1,000,000 RIS3 (immutable)</li>
+    <li><strong>Distribution at deploy:</strong> 100% to deployer wallet</li>
+    <li><strong>Distribution after launch:</strong> deployer adds ~850k as single-sided V4 LP, retains 150k for ops/marketing</li>
+  </ul>
+
+  <h2 id="pool">03 · Pool & Hook</h2>
+  <p>
+    The ris3/ETH pair lives in a Uniswap V4 pool with the following <code>PoolKey</code>:
+  </p>
+  <table>
+    <tr><th>currency0</th><td><code>0x0</code> (native ETH)</td></tr>
+    <tr><th>currency1</th><td>RIS3 token CA</td></tr>
+    <tr><th>fee</th><td>10000 (1% LP fee tier)</td></tr>
+    <tr><th>tickSpacing</th><td>60</td></tr>
+    <tr><th>hooks</th><td>Ris3EthFeeHook</td></tr>
+  </table>
+  <p>
+    The pool uses standard concentrated liquidity. Liquidity is provisioned by the deployer as a
+    single-sided ris3 position spanning from tick <code>-887220</code> (near-zero price) to a launch
+    tick just below the initial spot price. As buyers move price up into the LP range, ETH accumulates
+    and ris3 drains — standard Uniswap V4 mechanics.
+  </p>
+
+  <h3>The hook (Ris3EthFeeHook)</h3>
+  <p>
+    A V4 hook with the following permissions: <code>BEFORE_SWAP</code>, <code>BEFORE_SWAP_RETURNS_DELTA</code>,
+    <code>AFTER_SWAP</code>, <code>AFTER_SWAP_RETURNS_DELTA</code>. It runs on every swap and skims
+    1% of the ETH side, routing the fee directly to the vault as native ETH:
+  </p>
+  <ul>
+    <li><strong>Buy</strong> (ETH→RIS3): hook takes 1% of input ETH in <code>beforeSwap</code>, swap proceeds with 99% of input.</li>
+    <li><strong>Sell</strong> (RIS3→ETH): hook takes 1% of output ETH in <code>afterSwap</code>, user receives 99% of output.</li>
+  </ul>
+  <p>
+    The hook does <em>not</em> override the swap math. Standard V4 LP curves resolve every swap. The
+    hook only diverts a slice of the ETH leg. This is why indexers (DEXScreener et al.) see the pool as
+    a normal token pair with light extra fees, similar to the LOTO and sato architectures.
+  </p>
+
+  <h2 id="vault">04 · Leverage Vault</h2>
+  <p>
+    <code>Ris3LeverageVaultV2</code> is the leverage layer. It holds an ETH treasury (deposited by its
+    owner) and lends ETH to leverage positions. The vault has these key state variables:
+  </p>
+  <ul>
+    <li><code>treasuryEth</code> — owner deposits + accumulated fees, minus withdrawals and liquidation shortfalls.</li>
+    <li><code>totalDebt</code> — ETH actively lent across all open positions.</li>
+    <li><code>positions[id]</code> — per-position record: owner, openBlock, collateral, debt.</li>
+    <li><code>availableTreasury()</code> — withdrawable amount: <code>max(treasuryEth − totalDebt, 0)</code>.</li>
+  </ul>
+
+  <p>
+    The owner can <code>depositTreasury()</code> and <code>withdrawTreasury(amount)</code> at any time,
+    bounded by <code>availableTreasury()</code>. The vault has no other privileged functions. Anyone
+    can call <code>open()</code>, <code>close(id)</code>, <code>liquidate(id)</code>, or <code>sync()</code>.
+  </p>
+
+  <h2 id="mechanics">05 · Position Mechanics</h2>
+
+  <h3>Opening (open)</h3>
+  <p>Caller invokes <code>vault.open(uint8 leverage, uint256 minCollateral)</code> with <code>msg.value</code> as the margin. The vault:</p>
+  <div class="formula">
+    margin       = msg.value<br />
+    debt         = margin × (leverage − 1)<br />
+    leveragedSize = margin × leverage<br />
+    fee          = leveragedSize × 0.5%<br />
+    buyAmount    = leveragedSize − fee
+  </div>
+  <p>
+    The vault checks <code>availableTreasury() ≥ debt</code>, then atomically:
+  </p>
+  <ol>
+    <li>Credits <code>fee</code> to <code>treasuryEth</code> and <code>debt</code> to <code>totalDebt</code>.</li>
+    <li>Calls Universal Router with <code>value = buyAmount</code> to execute a single ETH→RIS3 swap on the pool.</li>
+    <li>Records the position: <code>{owner, openBlock, collateral, debt}</code>.</li>
+  </ol>
+  <p>
+    Because the vault funds the debt from its own ETH (rather than synthetic credit), every leverage
+    open is a clean, single buy on the chart. There is <em>no sell-then-buy round trip</em> and no
+    virtual reserve manipulation — the chart pumps by exactly the buy amount.
+  </p>
+
+  <h3>Closing (close)</h3>
+  <p>The position owner calls <code>vault.close(id, minProceeds)</code>. The vault:</p>
+  <ol>
+    <li>Requires <code>block.number > position.openBlock</code> (same-block-close shield).</li>
+    <li>Sells the collateral via Universal Router. Measures proceeds as actual balance change.</li>
+    <li>Reverts if <code>proceeds &lt; minProceeds</code>.</li>
+    <li>If <code>proceeds ≥ debt</code>: sends <code>proceeds − debt</code> to caller. The <code>debt</code> portion stays in the vault (returns to <code>availableTreasury</code> as <code>totalDebt</code> decreases).</li>
+    <li>If <code>proceeds &lt; debt</code>: caller gets nothing; <code>treasuryEth</code> absorbs the shortfall <code>(debt − proceeds)</code>.</li>
+    <li>Deletes the position.</li>
+  </ol>
+
+  <h3>Same-block close shield</h3>
+  <p>
+    A position cannot be closed in the same block it was opened. This blocks the classic open-pump-close
+    sandwich pattern: open a leveraged position to push spot up, then close it immediately to capture
+    the artificial pump on other trades in the same block. Reverts with <code>SameBlockClose()</code>.
+  </p>
+
+  <h2 id="liquidation">06 · Liquidation</h2>
+  <p>
+    Any address can call <code>vault.liquidate(id)</code> on any position. The vault sells the
+    collateral and computes <em>actual proceeds</em>. Liquidation succeeds only if:
+  </p>
+  <div class="formula">
+    proceeds × 10000 &lt; debt × 15000
+  </div>
+  <p>
+    That is, <code>proceeds &lt; 1.5 × debt</code>. Otherwise <code>liquidate</code> reverts with
+    <code>PositionHealthy()</code>. The 1.5× threshold leaves a 50% headroom over the debt — under
+    normal market conditions, liquidators can act long before a position would actually leave the vault
+    underwater.
+  </p>
+  <ul>
+    <li><strong>Bounty:</strong> <code>min(proceeds × 1%, 0.01 Ξ)</code> paid to the liquidator.</li>
+    <li><strong>Remainder:</strong> goes to the vault treasury.</li>
+    <li><strong>Shortfall (proceeds &lt; debt + bounty):</strong> treasury absorbs the loss.</li>
+  </ul>
+
+  <h2 id="fees">07 · Fee Structure</h2>
+  <table>
+    <tr><th>fee</th><th>rate</th><th>direction</th><th>recipient</th></tr>
+    <tr><td>LP fee</td><td>1%</td><td>both</td><td>LP NFT holder</td></tr>
+    <tr><td>Hook fee</td><td>1%</td><td>both (in ETH)</td><td>vault treasury</td></tr>
+    <tr><td>Leverage open fee</td><td>0.5%</td><td>open only</td><td>vault treasury</td></tr>
+    <tr><td>Liquidation bounty</td><td>1% (cap 0.01 Ξ)</td><td>liquidate</td><td>liquidator</td></tr>
+  </table>
+  <p>
+    Plain spot traders pay 2% per swap (1% LP + 1% hook). Leverage traders additionally pay 0.5% on
+    open. There are no funding rates, no interest accrual, no time-based decay.
+  </p>
+
+  <h2 id="risks">08 · Known Risks</h2>
+  <div class="box warn">
+    The contracts are unaudited. They have been tested on mainnet with small positions across deposit,
+    withdraw, open, close, and liquidate paths. Do not deposit more than you can afford to lose.
+  </div>
+  <ul>
+    <li><strong>Flash-crash liquidation lag:</strong> If price drops past the 1.5× threshold faster than liquidators can react, the treasury can absorb a loss. The 1.5× buffer was chosen to mitigate this but cannot eliminate it.</li>
+    <li><strong>Treasury custody risk:</strong> The vault owner can withdraw their treasury (subject to <code>availableTreasury</code>). They cannot pull ETH actively backing open positions, but they can drain unused capital. This is by design — the owner provides the lending capital and must be able to recover it.</li>
+    <li><strong>Hook fee dust:</strong> ETH that arrives at the vault during its own internal swaps (open/close/liquidate) is not auto-accounted in <code>treasuryEth</code>. The <code>sync()</code> function reconciles this — anyone can call it.</li>
+    <li><strong>LP NFT ownership:</strong> The deployer holds the V4 LP NFT and can call <code>decreaseLiquidity</code> to withdraw. The recommended post-launch action is to send the NFT to <code>0xdead</code> or a timelock contract to lock LP permanently.</li>
+    <li><strong>Pool drain edge case:</strong> If the LP gets pushed entirely to one side (e.g. all ris3 sold to buyers, only ETH remains), close/liquidate of remaining positions may revert because there's no token to sell into. This is a memecoin-launch edge case, not a normal-trading concern.</li>
+  </ul>
+
+  <h2 id="addresses">09 · Deployed Addresses</h2>
+  <p>All on Ethereum mainnet:</p>
+  <table>
+    <tr><th>contract</th><th>address</th></tr>
+    <tr><td>Ris3Token</td><td class="addr">0x83143B159bd5788c8E6a791AB72f247f2997C7D3</td></tr>
+    <tr><td>Ris3LeverageVaultV2</td><td class="addr">0x2820491Fe21341e9D2CebDCC6199Da6da66A9b4a</td></tr>
+    <tr><td>Ris3EthFeeHook</td><td class="addr">0x4a37aC7ca998E71204aEc92B4aAeb9da529300Cc</td></tr>
+    <tr><td>Uniswap V4 PoolManager</td><td class="addr">0x000000000004444c5dc75cB358380D2e3dE08A90</td></tr>
+    <tr><td>Universal Router (V4)</td><td class="addr">0x66a9893cC07D91D95644AEDD05D03f95e1dBA8Af</td></tr>
+  </table>
+
+  <hr />
+  <p style="text-align: center; color: var(--muted); font-size: 12px;">
+    ris3 v1 · <a href="/">ris3.xyz</a> · no admin keys · no upgradability
+  </p>
+
+</div>
+</body>
+</html>

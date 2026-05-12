@@ -240,3 +240,24 @@ section::before { display: none !important; }
   outline: 1px solid var(--acc) !important;
   outline-offset: 2px !important;
 }
+
+/* Hero polish — ghost button style for secondary CTA */
+.hero-actions .btn.ghost {
+  background: transparent !important;
+  color: #888 !important;
+  border: 1px solid #2a2a2a !important;
+}
+.hero-actions .btn.ghost:hover {
+  border-color: #00ff85 !important;
+  color: #fff !important;
+}
+.hero-actions .btn {
+  background: #00ff85 !important;
+  color: #000 !important;
+  border: 1px solid #00ff85 !important;
+  font-weight: 700 !important;
+}
+.hero-actions .btn:hover {
+  background: #fff !important;
+  border-color: #fff !important;
+}
