@@ -226,7 +226,7 @@
     <li><strong>Decimals:</strong> 18</li>
     <li><strong>Total supply:</strong> 1,000,000 RIS3 (immutable)</li>
     <li><strong>Distribution at deploy:</strong> 100% to deployer wallet</li>
-    <li><strong>Distribution after launch:</strong> deployer adds ~850k as single-sided V4 LP, retains 150k for ops/marketing</li>
+    <li><strong>Distribution after launch:</strong> deployer adds the entire 1M supply as single-sided V4 LP. No dev reserve.</li>
   </ul>
 
   <h2 id="pool">03 · Pool & Hook</h2>
@@ -330,11 +330,11 @@
     collateral and computes <em>actual proceeds</em>. Liquidation succeeds only if:
   </p>
   <div class="formula">
-    proceeds × 10000 &lt; debt × 15000
+    proceeds × 10000 &lt; debt × 14000
   </div>
   <p>
     That is, <code>proceeds &lt; 1.5 × debt</code>. Otherwise <code>liquidate</code> reverts with
-    <code>PositionHealthy()</code>. The 1.5× threshold leaves a 50% headroom over the debt — under
+    <code>PositionHealthy()</code>. The 1.4× threshold leaves a 40% headroom over the debt — under
     normal market conditions, liquidators can act long before a position would actually leave the vault
     underwater.
   </p>
@@ -363,7 +363,7 @@
     withdraw, open, close, and liquidate paths. Do not deposit more than you can afford to lose.
   </div>
   <ul>
-    <li><strong>Flash-crash liquidation lag:</strong> If price drops past the 1.5× threshold faster than liquidators can react, the treasury can absorb a loss. The 1.5× buffer was chosen to mitigate this but cannot eliminate it.</li>
+    <li><strong>Flash-crash liquidation lag:</strong> If price drops past the 1.4× threshold faster than liquidators can react, the treasury can absorb a loss. The 1.4× buffer was chosen to mitigate this but cannot eliminate it.</li>
     <li><strong>Treasury custody risk:</strong> The vault owner can withdraw their treasury (subject to <code>availableTreasury</code>). They cannot pull ETH actively backing open positions, but they can drain unused capital. This is by design — the owner provides the lending capital and must be able to recover it.</li>
     <li><strong>Hook fee dust:</strong> ETH that arrives at the vault during its own internal swaps (open/close/liquidate) is not auto-accounted in <code>treasuryEth</code>. The <code>sync()</code> function reconciles this — anyone can call it.</li>
     <li><strong>LP NFT ownership:</strong> The deployer holds the V4 LP NFT and can call <code>decreaseLiquidity</code> to withdraw. The recommended post-launch action is to send the NFT to <code>0xdead</code> or a timelock contract to lock LP permanently.</li>
@@ -374,9 +374,9 @@
   <p>All on Ethereum mainnet:</p>
   <table>
     <tr><th>contract</th><th>address</th></tr>
-    <tr><td>Ris3Token</td><td class="addr">0x83143B159bd5788c8E6a791AB72f247f2997C7D3</td></tr>
-    <tr><td>Ris3LeverageVaultV2</td><td class="addr">0x2820491Fe21341e9D2CebDCC6199Da6da66A9b4a</td></tr>
-    <tr><td>Ris3EthFeeHook</td><td class="addr">0x4a37aC7ca998E71204aEc92B4aAeb9da529300Cc</td></tr>
+    <tr><td>Ris3Token</td><td class="addr">0xC5f8fA2EfA5034538223553997e5659d89398557</td></tr>
+    <tr><td>Ris3LeverageVaultV2</td><td class="addr">0xE58991f4B2D4C0Cb5A868Bfc3B7809DCB5b64310</td></tr>
+    <tr><td>Ris3EthFeeHook</td><td class="addr">0x37cE11629BEf903862327B5F6864DB04222A00CC</td></tr>
     <tr><td>Uniswap V4 PoolManager</td><td class="addr">0x000000000004444c5dc75cB358380D2e3dE08A90</td></tr>
     <tr><td>Universal Router (V4)</td><td class="addr">0x66a9893cC07D91D95644AEDD05D03f95e1dBA8Af</td></tr>
   </table>
