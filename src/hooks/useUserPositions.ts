@@ -1,85 +1,77 @@
 import { useMemo } from 'react'
-  import { useReadContract, useReadContracts } from 'wagmi'
-  import { hookAddressFor } from '../lib/config'
-  import { riseHookAbi } from '../abi/RiseLeverageHook'
-  
-  export interface UserPosition {
-    id: bigint
-    owner: `0x${string}`
-    openBlock: bigint
-    leverageTier: number
-    collateral: bigint
-    debt: bigint
-  }
+import { useReadContract, useReadContracts } from 'wagmi'
+import { ris3VaultFor } from '../lib/config'
+import { ris3VaultAbi } from '../abi/Ris3Vault'
 
-  /**
-   * Enumerates all positions on the hook from id=1 up to nextPositionId(),
-   * keeps the ones owned by `address`. Cheap for small total-position counts
-   * (a few hundred). For thousands of positions, replace with subgraph/event
-   * indexing.
-   */
-  export function useUserPositions(address: `0x${string}` | undefined, chainId: number) {
-    const hookAddress = hookAddressFor(chainId)
+export interface UserPosition {
+  id: bigint
+  owner: `0x${string}`
+  openBlock: bigint
+  collateral: bigint
+  debt: bigint
+}
 
-    const { data: nextIdData, isLoading: isLoadingNext, isError: isErrorNext } = useReadContract({
-      address: hookAddress,
-      abi: riseHookAbi,
-      functionName: 'nextPositionId',
-      chainId,
-      query: { refetchInterval: 12_000 },
-    })
+/**
+ * Enumerate vault positions 1..nextPositionId-1, return those owned by `address`.
+ * For very high position counts this should switch to an event-indexed approach.
+ */
+export function useUserPositions(address: `0x${string}` | undefined, chainId: number) {
+  const vault = ris3VaultFor(chainId)
 
-    const nextId = (nextIdData as bigint | undefined) ?? 1n
+  const { data: nextIdData, isLoading: isLoadingNext, isError: isErrorNext } = useReadContract({
+    address: vault,
+    abi: ris3VaultAbi,
+    functionName: 'nextPositionId',
+    chainId,
+    query: { refetchInterval: 12_000 },
+  })
 
-    const contracts = useMemo(() => {
-      const list: any[] = []
-      for (let i = 1n; i < nextId; i++) {
-        list.push({
-          address: hookAddress,
-          abi: riseHookAbi,
-          functionName: 'getPosition',
-          args: [i],
-          chainId,
-        })
-      }
-      return list
-    }, [nextId, hookAddress, chainId])
+  const nextId = (nextIdData as bigint | undefined) ?? 1n
 
-    const { data: rawPositions, isLoading: isLoadingPositions, isError: isErrorPositions } = useReadContracts({
-      contracts,
-      query: { enabled: contracts.length > 0, refetchInterval: 12_000 },
-    })
-
-    const positions = useMemo<UserPosition[]>(() => {
-      if (!address || !rawPositions) return []
-      const me = address.toLowerCase()
-      const out: UserPosition[] = []
-      rawPositions.forEach((r, idx) => {
-        if (r.status !== 'success' || !r.result) return
-        const p = r.result as {
-          owner: `0x${string}`
-          openBlock: bigint
-          leverageTier: number
-          collateral: bigint
-          debt: bigint
-        }
-        if (!p.owner || p.owner === '0x0000000000000000000000000000000000000000') return
-        if (p.owner.toLowerCase() !== me) return
-        out.push({
-          id: BigInt(idx + 1),
-          owner: p.owner,
-          openBlock: p.openBlock,
-          leverageTier: Number(p.leverageTier),
-          collateral: p.collateral,
-          debt: p.debt,
-        })
+  const contracts = useMemo(() => {
+    const list: any[] = []
+    for (let i = 1n; i < nextId; i++) {
+      list.push({
+        address: vault,
+        abi: ris3VaultAbi,
+        functionName: 'positions',
+        args: [i],
+        chainId,
       })
-      return out
-    }, [rawPositions, address])
-  
-    return {
-      positions,
-      isLoading: isLoadingNext || isLoadingPositions,
-      isError: isErrorNext || isErrorPositions,
     }
+    return list
+  }, [nextId, vault, chainId])
+
+  const { data: rawPositions, isLoading: isLoadingPositions, isError: isErrorPositions } = useReadContracts({
+    contracts,
+    query: { enabled: contracts.length > 0, refetchInterval: 12_000 },
+  })
+
+  const positions = useMemo<UserPosition[]>(() => {
+    if (!address || !rawPositions) return []
+    const me = address.toLowerCase()
+    const out: UserPosition[] = []
+    rawPositions.forEach((r, idx) => {
+      if (r.status !== 'success' || !r.result) return
+      // V10 vault.positions returns (owner, openBlock, collateral, debt)
+      const tuple = r.result as readonly [`0x${string}`, bigint, bigint, bigint]
+      const [owner, openBlock, collateral, debt] = tuple
+      if (!owner || owner === '0x0000000000000000000000000000000000000000') return
+      if (owner.toLowerCase() !== me) return
+      out.push({
+        id: BigInt(idx + 1),
+        owner,
+        openBlock: BigInt(openBlock),
+        collateral: BigInt(collateral),
+        debt: BigInt(debt),
+      })
+    })
+    return out
+  }, [rawPositions, address])
+
+  return {
+    positions,
+    isLoading: isLoadingNext || isLoadingPositions,
+    isError: isErrorNext || isErrorPositions,
   }
+}

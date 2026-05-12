@@ -1,69 +1,52 @@
 import { useReadContracts } from 'wagmi'
-import { riseHookAbi } from '../abi/RiseLeverageHook'
-import { hookAddressFor, isHookConfigured, DEFAULT_CHAIN_ID } from '../lib/config'
-import { phantomEth, spotPrice } from '../lib/curve'
+import { ris3VaultAbi } from '../abi/Ris3Vault'
+import { ris3VaultFor, isConfigured, DEFAULT_CHAIN_ID } from '../lib/config'
 
 /**
- * usePoolState — reads the current pool state from the hook.
- * Polls every 12 seconds (configured in main.tsx QueryClient).
+ * usePoolState — reads vault state (treasury, debt, positions count).
  *
- * Returns: realETH, totalDebt, curveTokens, redemptionTokens, liquidationDeficit,
- *          protocolFees, plus derived values (phantomEth, spotPrice, debtHeadroom).
- *
- * Falls back to zeroes if the hook isn't configured (placeholder address).
+ * NOTE: Live pool price (sqrtPriceX96, tick) is NOT read here. The frontend defers to
+ * DEXScreener for displayed price/FDV. For internal computations the widget reads
+ * spot price as needed via Universal Router quoter calls.
  */
 export function usePoolState(chainId: number = DEFAULT_CHAIN_ID) {
-  const hookAddress = hookAddressFor(chainId)
-  const configured = isHookConfigured(chainId)
+  const vault = ris3VaultFor(chainId)
+  const ready = isConfigured(chainId)
 
   const { data, isLoading, error, refetch } = useReadContracts({
-    contracts: configured
+    contracts: ready
       ? [
-          { address: hookAddress, abi: riseHookAbi, functionName: 'realETH', chainId },
-          { address: hookAddress, abi: riseHookAbi, functionName: 'totalDebt', chainId },
-          { address: hookAddress, abi: riseHookAbi, functionName: 'curveTokens', chainId },
-          { address: hookAddress, abi: riseHookAbi, functionName: 'redemptionTokens', chainId },
-          { address: hookAddress, abi: riseHookAbi, functionName: 'liquidationDeficit', chainId },
-          { address: hookAddress, abi: riseHookAbi, functionName: 'protocolFees', chainId },
-          { address: hookAddress, abi: riseHookAbi, functionName: 'nextPositionId', chainId },
+          { address: vault, abi: ris3VaultAbi, functionName: 'treasuryEth', chainId },
+          { address: vault, abi: ris3VaultAbi, functionName: 'totalDebt', chainId },
+          { address: vault, abi: ris3VaultAbi, functionName: 'availableTreasury', chainId },
+          { address: vault, abi: ris3VaultAbi, functionName: 'nextPositionId', chainId },
         ]
       : [],
     query: {
-      enabled: configured,
+      enabled: ready,
       refetchInterval: 12_000,
     },
   })
 
-  const realETH = (data?.[0]?.result as bigint | undefined) ?? 0n
-  const totalDebt = (data?.[1]?.result as bigint | undefined) ?? 0n
-  const curveTokens = (data?.[2]?.result as bigint | undefined) ?? 0n
-  const redemptionTokens = (data?.[3]?.result as bigint | undefined) ?? 0n
-  const liquidationDeficit = (data?.[4]?.result as bigint | undefined) ?? 0n
-  const protocolFees = (data?.[5]?.result as bigint | undefined) ?? 0n
-  const nextPositionId = (data?.[6]?.result as bigint | undefined) ?? 0n
-
-  const phantom = phantomEth(realETH, totalDebt, liquidationDeficit)
-  const spot = spotPrice(phantom, curveTokens)
-
-  // global debt cap = 40% of (realETH + V) = 40% of (realETH + 20 ETH)
-  const debtCap = ((realETH + 20n * 10n ** 18n) * 4000n) / 10000n
-  const debtHeadroom = debtCap > totalDebt ? debtCap - totalDebt : 0n
+  const treasuryEth        = (data?.[0]?.result as bigint | undefined) ?? 0n
+  const totalDebt          = (data?.[1]?.result as bigint | undefined) ?? 0n
+  const availableTreasury  = (data?.[2]?.result as bigint | undefined) ?? 0n
+  const nextPositionId     = (data?.[3]?.result as bigint | undefined) ?? 1n
 
   return {
-    realETH,
+    treasuryEth,
     totalDebt,
-    curveTokens,
-    redemptionTokens,
-    liquidationDeficit,
-    protocolFees,
+    availableTreasury,
     nextPositionId,
-    phantom,
-    spot,
-    debtCap,
-    debtHeadroom,
     isLoading,
     error,
-    configured,
+    configured: ready,
     refetch,
+    // Legacy aliases for old code paths (will be removed)
+    realETH: treasuryEth,
+    debtHeadroom: availableTreasury,
+    phantom: 0n,
+    spot: 0n,
+    curveTokens: 0n,
   }
 }

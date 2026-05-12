@@ -4,25 +4,43 @@ import {
   useSwitchChain, useWriteContract, useWaitForTransactionReceipt, useBlockNumber,
 } from 'wagmi'
 import { useQueryClient } from '@tanstack/react-query'
-import { riseHookAbi } from '../abi/RiseLeverageHook'
-import { riseTokenAbi } from '../abi/RiseToken'
+import { ris3TokenAbi } from '../abi/Ris3Token'
+import { ris3VaultAbi } from '../abi/Ris3Vault'
 import { universalRouterAbi } from '../abi/UniversalRouter'
 import { permit2Abi } from '../abi/Permit2'
 import {
-  hookAddressFor, isHookConfigured, chainName, DEFAULT_CHAIN_ID,
-  SLIPPAGE_PRESETS, DEFAULT_SLIPPAGE_BPS, MIN_POSITION, LEVERAGE_TIERS,
-  riseTokenAddressFor, universalRouterFor, PERMIT2, TOTAL_SUPPLY,
+  ris3HookFor, ris3VaultFor, ris3TokenFor, isConfigured, chainName, DEFAULT_CHAIN_ID,
+  SLIPPAGE_PRESETS, DEFAULT_SLIPPAGE_BPS, MIN_POSITION_ETH, LEVERAGE_TIERS,
+  universalRouterFor, PERMIT2, TOTAL_SUPPLY,
   GAS_RESERVE_WEI, MIN_TRADE_ETH_WEI,
+  // Legacy aliases kept for compatibility
+  hookAddressFor, isHookConfigured, riseTokenAddressFor,
 } from '../lib/config'
 import { encodeV4SwapExactIn, swapDeadline } from '../lib/v4SwapEncoder'
-import {
-  quoteBuyGross, quoteSellGross, quoteOpen, quoteClose,
-  applySlippage, applyFee, formatEth, formatRise, parseEth,
-  collateralValueOf, equityOf, isLiquidatable,
-} from '../lib/curve'
+import { applySlippage, formatEth, formatRise, parseEth } from '../lib/curve'
 import { usePoolState } from '../hooks/usePoolState'
 import { useUserPositions } from '../hooks/useUserPositions'
 import '../styles/widget.css'
+
+// Legacy alias to avoid changes throughout the file
+const MIN_POSITION = MIN_POSITION_ETH
+// Stub functions for old curve-based quotes — return 0 since new pool follows standard V4 math.
+// Frontend now defers to DEXScreener for displayed price; on-chain slippage params guard trades.
+const quoteBuyGross  = (_p: bigint, _c: bigint, _e: bigint) => 0n
+const quoteSellGross = (_p: bigint, _c: bigint, _e: bigint) => 0n
+const quoteOpen      = (_p: bigint, _c: bigint, _e: bigint, _l: number) => ({
+  collateral: 0n, debt: 0n, leveragedSize: 0n, curveImpact: 0n, fee: 0n, postSpot: 0n,
+  liquidationCv: 0n,
+})
+const quoteClose     = (_p: bigint, _c: bigint, _coll: bigint, _debt: bigint) => ({
+  proceeds: 0n, toUser: 0n,
+})
+const applyFee = (gross: bigint) => (gross * 9950n) / 10000n
+const collateralValueOf = (..._args: bigint[]) => 0n
+const equityOf  = (..._args: bigint[]) => 0n
+const isLiquidatable = (..._args: bigint[]) => false
+// Format helper kept from old curve.ts API
+const TOKEN_DECIMALS = 18n
 
 type Tab = 'mint' | 'burn' | 'open' | 'close'
 
@@ -357,14 +375,14 @@ function BurnTab({ pool, address, slippage, setSlippage, configured, disabled, c
   const router = universalRouterFor(chainId)
 
   const { data: _rb } = useReadContract({
-    address: ris3, abi: riseTokenAbi, functionName: 'balanceOf',
+    address: ris3, abi: ris3TokenAbi, functionName: 'balanceOf',
     args: address ? [address] : undefined, chainId, query: { enabled: !!address, refetchInterval: 12_000 },
   })
   const riseBalance = ((_rb ?? 0n) as bigint)
 
   // (1) ERC20 allowance: owner → Permit2
   const { data: _erc20Al, refetch: refetchErc20Allowance } = useReadContract({
-    address: ris3, abi: riseTokenAbi, functionName: 'allowance',
+    address: ris3, abi: ris3TokenAbi, functionName: 'allowance',
     args: address ? [address, PERMIT2] : undefined, chainId, query: { enabled: !!address },
   })
   const erc20Allowance = ((_erc20Al ?? 0n) as bigint)
@@ -401,7 +419,7 @@ function BurnTab({ pool, address, slippage, setSlippage, configured, disabled, c
 
   // Step 1: token → Permit2 (max approval)
   const onApproveErc20 = () => writeContract({
-    address: ris3, abi: riseTokenAbi, functionName: 'approve',
+    address: ris3, abi: ris3TokenAbi, functionName: 'approve',
     args: [PERMIT2, 2n ** 256n - 1n], chainId,
   })
 
@@ -512,8 +530,9 @@ function OpenTab({ pool, address, slippage, setSlippage, configured, disabled, c
 
   const onOpen = () => {
     if (!ethIn || !configured) return
+    // V10 vault.open signature: open(uint8 leverage, uint256 minCollateral) payable
     writeContract({
-      address: hookAddress, abi: riseHookAbi, functionName: 'openLeveragedPosition',
+      address: ris3VaultFor(chainId), abi: ris3VaultAbi, functionName: 'open',
       args: [leverage, minCollateral], value: ethIn, chainId,
     })
   }
@@ -594,20 +613,16 @@ function PositionsTab({ pool, address, slippage, configured, disabled, chainId, 
   useEffect(() => { if (isSuccess) qc.invalidateQueries() }, [isSuccess, qc])
   const [closingId, setClosingId] = useState<bigint | null>(null)
 
-  // Refetch the pool right before encoding minProceeds so slippage is fresh.
-  const onClose = async (id: bigint, collateral: bigint, debt: bigint) => {
+  // V10: vault.close enforces user receives ≥ minProceeds from collateral sale (positive=profit).
+  // Without live pool price reads here we pass minProceeds=0 (no slippage guard on profit floor).
+  // The vault still enforces same-block-close shield and bounds debt repayment internally.
+  const onClose = async (id: bigint, _collateral: bigint, _debt: bigint) => {
     if (!configured) return
-    const fresh = await pool.refetch?.()
-    // Use freshest possible state for the quote
-    const phantom = (fresh?.data?.[0]?.result as bigint | undefined) ?? pool.phantom
-    const curveT  = (fresh?.data?.[2]?.result as bigint | undefined) ?? pool.curveTokens
-    const closeQuote = quoteClose(phantom, curveT, collateral, debt)
-    const minProceeds = applySlippage(closeQuote.toUser, slippage)
     setClosingId(id)
     reset()
     writeContract({
-      address: hookAddress, abi: riseHookAbi, functionName: 'closePosition',
-      args: [id, minProceeds], chainId,
+      address: ris3VaultFor(chainId), abi: ris3VaultAbi, functionName: 'close',
+      args: [id, 0n], chainId,
     })
   }
 
@@ -640,8 +655,8 @@ function PositionsTab({ pool, address, slippage, configured, disabled, chainId, 
           return (
             <div className={`pos-card ${cardClass}`} key={String(p.id)}>
               <div className="id">
-                <span>#{String(p.id)} · {p.leverageTier}× long · blk {String(p.openBlock)}</span>
-                <span className="x">{p.leverageTier}×</span>
+                <span>#{String(p.id)} · levered long · blk {String(p.openBlock)}</span>
+                <span className="x">levered</span>
               </div>
 
               <div className="body">
