@@ -19,6 +19,7 @@ import {
 import { encodeV4SwapExactIn, swapDeadline } from '../lib/v4SwapEncoder'
 import { applySlippage, formatEth, formatRise, parseEth } from '../lib/curve'
 import { usePoolState } from '../hooks/usePoolState'
+import { usePoolPrice } from '../hooks/usePoolPrice'
 import { useUserPositions } from '../hooks/useUserPositions'
 import '../styles/widget.css'
 
@@ -607,6 +608,7 @@ function OpenTab({ pool, address, slippage, setSlippage, configured, disabled, c
 function PositionsTab({ pool, address, slippage, configured, disabled, chainId, blockNumber }: any) {
   const hookAddress = hookAddressFor(chainId)
   const { positions, isLoading, isError } = useUserPositions(address, chainId)
+  const price = usePoolPrice(chainId)   // live spot price for PnL — refreshes every 8s
   const { writeContract, data: hash, isPending, error, reset } = useWriteContract()
   const { isLoading: isConfirming, isSuccess } = useWaitForTransactionReceipt({ hash, chainId })
   const qc = useQueryClient()
@@ -635,16 +637,33 @@ function PositionsTab({ pool, address, slippage, configured, disabled, chainId, 
     <>
       <div className="positions-list">
         {positions.map((p: any) => {
-          const cv = collateralValueOf(pool.phantom, pool.curveTokens, p.collateral)
-          const equity = equityOf(pool.phantom, pool.curveTokens, p.collateral, p.debt)
-          const liq = isLiquidatable(pool.phantom, pool.curveTokens, p.collateral, p.debt)
-          const threshold = (p.debt * 13000n) / 10000n
-          const distancePct = cv > threshold
-            ? Number(((cv - threshold) * 10000n) / (threshold || 1n)) / 100
+          // Live PnL math using current pool spot price.
+          // collateral is in ris3 wei (uint128). ethPerRis3 is in ETH per 1 ris3 (JS number).
+          // Convert collateral (1e18 base) to whole-ris3 units, multiply by ethPerRis3, scale back to wei.
+          const collateralEthWei = price.ready
+            ? BigInt(Math.floor(Number(p.collateral) / 1e18 * price.ethPerRis3 * 1e18))
+            : 0n
+          const debtWei = BigInt(p.debt)
+          const equityWei = collateralEthWei > debtWei ? collateralEthWei - debtWei : 0n
+          const underwaterWei = collateralEthWei < debtWei ? debtWei - collateralEthWei : 0n
+
+          // health ratio = collateral_value / debt. At open, ~2 for 2x, ~3 for 3x. Drops as price falls.
+          // Liquidatable when health < 1.4 (per contract LIQ_THRESHOLD_BPS = 14000).
+          const healthRatio = price.ready && debtWei > 0n
+            ? Number(collateralEthWei) / Number(debtWei)
             : 0
-          const warning = !liq && distancePct < 15
+          const liq = price.ready && healthRatio < 1.4 && healthRatio > 0
+          const warning = price.ready && !liq && healthRatio < 1.6
           const cardClass = liq ? 'liq' : warning ? 'warning' : ''
-          const healthFillPct = liq ? 0 : Math.max(5, Math.min(100, distancePct * 2))
+          // Visual: full at 3x health, empty at 1x. Liquidation line is at 1.4x.
+          const healthFillPct = price.ready
+            ? Math.max(2, Math.min(100, ((healthRatio - 1) / 2) * 100))
+            : 50
+
+          // PnL vs debt — gives intuitive "your position is up X% from break-even"
+          const pnlPct = price.ready && debtWei > 0n
+            ? ((Number(collateralEthWei) - Number(debtWei)) / Number(debtWei)) * 100
+            : 0
 
           // Same-block close blocker — contract reverts SameBlockClose when block.number ≤ openBlock.
           const currentBlock = blockNumber ? BigInt(blockNumber) : 0n
@@ -656,13 +675,15 @@ function PositionsTab({ pool, address, slippage, configured, disabled, chainId, 
             <div className={`pos-card ${cardClass}`} key={String(p.id)}>
               <div className="id">
                 <span>#{String(p.id)} · levered long · blk {String(p.openBlock)}</span>
-                <span className="x">levered</span>
+                <span className="x">{healthRatio > 0 ? healthRatio.toFixed(2) + '×' : 'live'}</span>
               </div>
 
               <div className="body">
                 <div><div className="pk">collateral</div><div className="pv">{formatRise(p.collateral, 0)}</div></div>
-                <div><div className="pk">debt</div><div className="pv">{formatEth(p.debt, 4)} Ξ</div></div>
-                <div><div className="pk">equity</div><div className={`pv ${equity >= 0n ? 'grn' : 'red'}`}>{formatEth(equity, 4)} Ξ</div></div>
+                <div><div className="pk">value now</div><div className={`pv ${pnlPct >= 0 ? 'grn' : 'red'}`}>{price.ready ? formatEth(collateralEthWei, 4) : '—'} Ξ</div></div>
+                <div><div className="pk">debt</div><div className="pv">{formatEth(debtWei, 4)} Ξ</div></div>
+                <div><div className="pk">equity</div><div className={`pv ${equityWei > 0n ? 'grn' : 'red'}`}>{price.ready ? (underwaterWei > 0n ? '-' + formatEth(underwaterWei, 4) : formatEth(equityWei, 4)) : '—'} Ξ</div></div>
+                <div><div className="pk">vs debt</div><div className={`pv ${pnlPct >= 0 ? 'grn' : 'red'}`}>{price.ready ? (pnlPct >= 0 ? '+' : '') + pnlPct.toFixed(1) + '%' : '—'}</div></div>
               </div>
 
               <div className="health">
@@ -670,8 +691,8 @@ function PositionsTab({ pool, address, slippage, configured, disabled, chainId, 
                   <div className="health-fill" style={{ width: `${healthFillPct}%` }} />
                 </div>
                 <div className="health-meta">
-                  <span>health</span>
-                  <span><strong>{liq ? 'LIQUIDATABLE' : `${distancePct.toFixed(1)}%`}</strong> to liq</span>
+                  <span>health · {healthRatio > 0 ? healthRatio.toFixed(2) + '×' : '—'}</span>
+                  <span><strong>{liq ? 'LIQUIDATABLE' : warning ? 'warning' : 'healthy'}</strong> · liq @ 1.40×</span>
                 </div>
               </div>
 
