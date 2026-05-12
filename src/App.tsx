@@ -20,7 +20,9 @@ export default function App() {
         <section className="hero" style={{ borderBottom: 'none' }}>
           <div className="hero-l">
             <div className="hero-meta">
-              <span>uniswap v4 · mainnet</span>
+              <span>uniswap v4 hook</span>
+              <span className="div"></span>
+              <span>mainnet</span>
             </div>
 
             <h1 className="headline">
@@ -30,7 +32,9 @@ export default function App() {
             </h1>
 
             <p className="hero-tagline">
-              Trade ris3 like any V4 token, or open <em>2× / 3×</em> against vault ETH. Same pool, same chart.
+              A <strong>fee-hook V4 pool</strong> with a <strong>leverage vault</strong> on top.
+              Trade ris3 like any token, or open <em>2× / 3×</em> against vault ETH. The hook skims
+              1% of every swap to the vault — <em>the protocol earns from every trade</em>.
             </p>
 
             <div className="hero-actions">
