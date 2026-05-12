@@ -21,6 +21,10 @@ import { applySlippage, formatEth, formatRise, parseEth } from '../lib/curve'
 import { usePoolState } from '../hooks/usePoolState'
 import { usePoolPrice } from '../hooks/usePoolPrice'
 import { useUserPositions } from '../hooks/useUserPositions'
+import {
+  slSqrtX96FromDropPct, tpSqrtX96FromRisePct,
+  sqrtX96ToEthPerRis3,
+} from '../lib/priceMath'
 import '../styles/widget.css'
 
 // Legacy alias to avoid changes throughout the file
@@ -499,8 +503,11 @@ function OpenTab({ pool, address, slippage, setSlippage, configured, disabled, c
   const hookAddress = hookAddressFor(chainId)
   const { watchAsset } = useWatchAsset()
   const { data: ethBalance } = useBalance({ address, chainId })
+  const price = usePoolPrice(chainId)
   const [input, setInput] = useState('')
   const [leverage, setLeverage] = useState<2 | 3>(3)
+  const [slPct, setSlPct] = useState('')   // user-friendly drop %, blank = no SL
+  const [tpPct, setTpPct] = useState('')   // user-friendly rise %, blank = no TP
 
   const ethIn = useMemo(() => parseEth(input), [input])
   const quote = useMemo(() => (ethIn && ethIn > 0n)
@@ -531,10 +538,17 @@ function OpenTab({ pool, address, slippage, setSlippage, configured, disabled, c
 
   const onOpen = () => {
     if (!ethIn || !configured) return
-    // V10 vault.open signature: open(uint8 leverage, uint256 minCollateral) payable
+    // V13: open(uint8 leverage, uint256 minCollateral, uint160 slSqrtPriceX96, uint160 tpSqrtPriceX96)
+    // 0 sl/tp = no triggers. User-entered % converted using current pool price.
+    const slNum = parseFloat(slPct)
+    const tpNum = parseFloat(tpPct)
+    const slSqrt = (price.ready && slNum > 0)
+      ? slSqrtX96FromDropPct(price.ethPerRis3, slNum) : 0n
+    const tpSqrt = (price.ready && tpNum > 0)
+      ? tpSqrtX96FromRisePct(price.ethPerRis3, tpNum) : 0n
     writeContract({
       address: ris3VaultFor(chainId), abi: ris3VaultAbi, functionName: 'open',
-      args: [leverage, minCollateral], value: ethIn, chainId,
+      args: [leverage, minCollateral, slSqrt, tpSqrt], value: ethIn, chainId,
     })
   }
 
@@ -585,6 +599,24 @@ function OpenTab({ pool, address, slippage, setSlippage, configured, disabled, c
         </div>
       )}
 
+      <div className="trigger-row">
+        <div className="trigger-cell">
+          <div className="lab">stop-loss</div>
+          <input className="trigger-input" inputMode="decimal" placeholder="off"
+                 value={slPct} onChange={e => setSlPct(e.target.value.replace(/[^0-9.]/g,''))} />
+          <div className="trigger-suffix">% drop</div>
+        </div>
+        <div className="trigger-cell">
+          <div className="lab">take-profit</div>
+          <input className="trigger-input" inputMode="decimal" placeholder="off"
+                 value={tpPct} onChange={e => setTpPct(e.target.value.replace(/[^0-9.]/g,''))} />
+          <div className="trigger-suffix">% rise</div>
+        </div>
+      </div>
+      <div className="trigger-hint">
+        triggers are optional · anyone can call <code>closeOnTrigger</code> when hit (1% bounty, max 0.001 Ξ)
+      </div>
+
       <SlippageRow value={slippage} onChange={setSlippage} />
 
       <button className={`action-btn side-buy`} disabled={!canSubmit} onClick={onOpen}>
@@ -614,10 +646,10 @@ function PositionsTab({ pool, address, slippage, configured, disabled, chainId, 
   const qc = useQueryClient()
   useEffect(() => { if (isSuccess) qc.invalidateQueries() }, [isSuccess, qc])
   const [closingId, setClosingId] = useState<bigint | null>(null)
+  const [editingId, setEditingId] = useState<bigint | null>(null)
+  const [editSlPct, setEditSlPct] = useState('')
+  const [editTpPct, setEditTpPct] = useState('')
 
-  // V10: vault.close enforces user receives ≥ minProceeds from collateral sale (positive=profit).
-  // Without live pool price reads here we pass minProceeds=0 (no slippage guard on profit floor).
-  // The vault still enforces same-block-close shield and bounds debt repayment internally.
   const onClose = async (id: bigint, _collateral: bigint, _debt: bigint) => {
     if (!configured) return
     setClosingId(id)
@@ -626,6 +658,20 @@ function PositionsTab({ pool, address, slippage, configured, disabled, chainId, 
       address: ris3VaultFor(chainId), abi: ris3VaultAbi, functionName: 'close',
       args: [id, 0n], chainId,
     })
+  }
+
+  const onSaveTriggers = (id: bigint) => {
+    if (!configured || !price.ready) return
+    const slNum = parseFloat(editSlPct)
+    const tpNum = parseFloat(editTpPct)
+    const slSqrt = slNum > 0 ? slSqrtX96FromDropPct(price.ethPerRis3, slNum) : 0n
+    const tpSqrt = tpNum > 0 ? tpSqrtX96FromRisePct(price.ethPerRis3, tpNum) : 0n
+    reset()
+    writeContract({
+      address: ris3VaultFor(chainId), abi: ris3VaultAbi, functionName: 'setTriggers',
+      args: [id, slSqrt, tpSqrt], chainId,
+    })
+    setEditingId(null)
   }
 
   if (!configured) return <div className="empty-positions">not deployed yet</div>
@@ -695,6 +741,38 @@ function PositionsTab({ pool, address, slippage, configured, disabled, chainId, 
                   <span><strong>{liq ? 'LIQUIDATABLE' : warning ? 'warning' : 'healthy'}</strong> · liq @ 1.40×</span>
                 </div>
               </div>
+
+              {/* SL/TP row — display + edit */}
+              {(() => {
+                const slEth = p.slSqrtPriceX96 > 0n ? sqrtX96ToEthPerRis3(p.slSqrtPriceX96) : 0
+                const tpEth = p.tpSqrtPriceX96 > 0n ? sqrtX96ToEthPerRis3(p.tpSqrtPriceX96) : 0
+                const isEditing = editingId === p.id
+                return (
+                  <div className="triggers">
+                    {!isEditing && (
+                      <div className="trigger-display">
+                        <span className="tk">SL</span>
+                        <span className="tv">{slEth > 0 ? slEth.toExponential(3) + ' Ξ/RIS3' : 'off'}</span>
+                        <span className="tk">TP</span>
+                        <span className="tv">{tpEth > 0 ? tpEth.toExponential(3) + ' Ξ/RIS3' : 'off'}</span>
+                        <button className="edit-triggers" onClick={() => {
+                          setEditingId(p.id); setEditSlPct(''); setEditTpPct('')
+                        }} disabled={disabled}>edit</button>
+                      </div>
+                    )}
+                    {isEditing && (
+                      <div className="trigger-edit">
+                        <input className="trigger-input" inputMode="decimal" placeholder="SL % drop"
+                               value={editSlPct} onChange={e => setEditSlPct(e.target.value.replace(/[^0-9.]/g,''))} />
+                        <input className="trigger-input" inputMode="decimal" placeholder="TP % rise"
+                               value={editTpPct} onChange={e => setEditTpPct(e.target.value.replace(/[^0-9.]/g,''))} />
+                        <button className="save-triggers" onClick={() => onSaveTriggers(p.id)} disabled={!price.ready || disabled}>save</button>
+                        <button className="cancel-triggers" onClick={() => setEditingId(null)}>cancel</button>
+                      </div>
+                    )}
+                  </div>
+                )
+              })()}
 
               <button
                 className="close"

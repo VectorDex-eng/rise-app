@@ -615,6 +615,120 @@
   cursor: pointer;
   transition: all 80ms ease;
 }
+
+/* ── SL/TP triggers ── */
+.triggers {
+  border-top: 1px dashed var(--w-line-hi);
+  padding-top: 6px;
+  margin-top: 2px;
+}
+.trigger-display {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 10px;
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  color: var(--w-fg-mute);
+  text-transform: uppercase;
+}
+.trigger-display .tk { color: var(--w-fg-dim); font-weight: 600; }
+.trigger-display .tv { color: var(--w-fg); font-family: var(--w-mono); }
+.trigger-display .edit-triggers {
+  margin-left: auto;
+  appearance: none;
+  background: transparent;
+  border: 1px dashed var(--w-line-hi);
+  color: var(--w-fg-mute);
+  font-family: var(--w-mono);
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding: 3px 6px;
+  cursor: pointer;
+}
+.trigger-display .edit-triggers:hover:not(:disabled) { color: var(--w-fg); border-color: var(--w-fg); }
+.trigger-edit {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+}
+.trigger-edit .trigger-input {
+  flex: 1 1 90px;
+  appearance: none;
+  background: var(--w-bg-row);
+  border: 1px solid var(--w-line-hi);
+  color: var(--w-fg);
+  font-family: var(--w-mono);
+  font-size: 11px;
+  padding: 4px 6px;
+}
+.trigger-edit .save-triggers,
+.trigger-edit .cancel-triggers {
+  appearance: none;
+  background: transparent;
+  border: 1px solid var(--w-line-hi);
+  color: var(--w-fg);
+  font-family: var(--w-mono);
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding: 4px 8px;
+  cursor: pointer;
+}
+.trigger-edit .save-triggers { border-color: var(--w-fg); }
+.trigger-edit .save-triggers:disabled { opacity: 0.4; cursor: not-allowed; }
+
+/* ── SL/TP inputs in OpenTab ── */
+.trigger-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-top: 2px;
+}
+.trigger-cell {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid var(--w-line-hi);
+  background: var(--w-bg-row);
+  padding: 6px 8px;
+}
+.trigger-cell .lab {
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--w-fg-mute);
+  white-space: nowrap;
+}
+.trigger-cell .trigger-input {
+  flex: 1 1 auto;
+  width: 100%;
+  min-width: 0;
+  appearance: none;
+  background: transparent;
+  border: 0;
+  color: var(--w-fg);
+  font-family: var(--w-mono);
+  font-size: 12px;
+  outline: none;
+}
+.trigger-cell .trigger-suffix {
+  font-size: 9px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--w-fg-dim);
+  white-space: nowrap;
+}
+.trigger-hint {
+  font-size: 9px;
+  letter-spacing: 0.06em;
+  color: var(--w-fg-mute);
+  text-transform: lowercase;
+  padding: 2px 2px 0;
+}
+.trigger-hint code { font-family: var(--w-mono); color: var(--w-fg-dim); }
 .pos-card .close:hover:not(:disabled) { background: var(--w-fg); color: var(--w-bg); }
 .pos-card .close:disabled {
   border-color: var(--w-line-hi);

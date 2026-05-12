@@ -9,6 +9,8 @@ export interface UserPosition {
   openBlock: bigint
   collateral: bigint
   debt: bigint
+  slSqrtPriceX96: bigint   // 0 = no SL
+  tpSqrtPriceX96: bigint   // 0 = no TP
 }
 
 /**
@@ -53,9 +55,9 @@ export function useUserPositions(address: `0x${string}` | undefined, chainId: nu
     const out: UserPosition[] = []
     rawPositions.forEach((r, idx) => {
       if (r.status !== 'success' || !r.result) return
-      // V10 vault.positions returns (owner, openBlock, collateral, debt)
-      const tuple = r.result as readonly [`0x${string}`, bigint, bigint, bigint]
-      const [owner, openBlock, collateral, debt] = tuple
+      // V13 vault.positions returns (owner, openBlock, collateral, debt, slSqrtPriceX96, tpSqrtPriceX96)
+      const tuple = r.result as readonly [`0x${string}`, bigint, bigint, bigint, bigint, bigint]
+      const [owner, openBlock, collateral, debt, slSqrtPriceX96, tpSqrtPriceX96] = tuple
       if (!owner || owner === '0x0000000000000000000000000000000000000000') return
       if (owner.toLowerCase() !== me) return
       out.push({
@@ -64,6 +66,8 @@ export function useUserPositions(address: `0x${string}` | undefined, chainId: nu
         openBlock: BigInt(openBlock),
         collateral: BigInt(collateral),
         debt: BigInt(debt),
+        slSqrtPriceX96: BigInt(slSqrtPriceX96),
+        tpSqrtPriceX96: BigInt(tpSqrtPriceX96),
       })
     })
     return out

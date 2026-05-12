@@ -191,6 +191,7 @@
       <li><a href="#vault">Leverage Vault</a></li>
       <li><a href="#mechanics">Position mechanics</a></li>
       <li><a href="#liquidation">Liquidation</a></li>
+      <li><a href="#triggers">Stop-loss &amp; take-profit</a></li>
       <li><a href="#fees">Fee structure</a></li>
       <li><a href="#addresses">Deployed addresses</a></li>
     </ol>
@@ -325,8 +326,8 @@
 
   <h2 id="liquidation">06 · Liquidation</h2>
   <p>
-    Any address can call <code>vault.liquidate(id)</code> on any position. The vault sells the
-    collateral and computes <em>actual proceeds</em>. Liquidation succeeds only if:
+    Any address can call <code>vault.liquidate(id, minProceeds)</code> on any position. The vault sells
+    the collateral and computes <em>actual proceeds</em>. Liquidation succeeds only if:
   </p>
   <div class="formula">
     proceeds × 10000 &lt; debt × 14000
@@ -335,7 +336,8 @@
     That is, <code>proceeds &lt; 1.4 × debt</code>. Otherwise <code>liquidate</code> reverts with
     <code>PositionHealthy()</code>. The 1.4× threshold leaves a 40% headroom over the debt — under
     normal market conditions, liquidators can act long before a position would actually leave the vault
-    underwater.
+    underwater. The <code>minProceeds</code> parameter is a sandwich-protection floor enforced
+    in-block.
   </p>
   <ul>
     <li><strong>Bounty:</strong> <code>min(proceeds × 1%, 0.01 Ξ)</code> paid to the liquidator.</li>
@@ -343,26 +345,48 @@
     <li><strong>Shortfall (proceeds &lt; debt + bounty):</strong> treasury absorbs the loss.</li>
   </ul>
 
-  <h2 id="fees">07 · Fee Structure</h2>
+  <h2 id="triggers">07 · Stop-Loss &amp; Take-Profit</h2>
+  <p>
+    Every leveraged position carries two optional on-chain triggers, stored as
+    <code>uint160</code> sqrtPriceX96 thresholds against the live pool:
+  </p>
+  <ul>
+    <li><strong>SL</strong> — fires when <code>currentSqrtPriceX96 &ge; slSqrtPriceX96</code> (RIS3 cheaper than the floor).</li>
+    <li><strong>TP</strong> — fires when <code>currentSqrtPriceX96 &le; tpSqrtPriceX96</code> (RIS3 above the target).</li>
+  </ul>
+  <p>
+    Set them at open via <code>open(leverage, minCollateral, slSqrtPriceX96, tpSqrtPriceX96)</code>, or
+    update later with <code>setTriggers(id, sl, tp)</code> — owner-only. A zero value disables that leg.
+  </p>
+  <p>
+    When a trigger condition holds, <strong>anyone</strong> can call <code>closeOnTrigger(id)</code>.
+    The vault reads slot0 from the V4 PoolManager, verifies the threshold, sells the collateral, repays
+    debt, and pays the caller a <strong>0.1% bounty (cap 0.001 Ξ)</strong> out of position proceeds.
+    Remaining ETH goes to the position owner. Triggers cannot fire in the same block as <code>open</code> —
+    same-block close shield applies to keep oracle-style flash manipulation off the table.
+  </p>
+
+  <h2 id="fees">08 · Fee Structure</h2>
   <table>
     <tr><th>fee</th><th>rate</th><th>direction</th><th>recipient</th></tr>
     <tr><td>LP fee</td><td>1%</td><td>both</td><td>LP NFT holder</td></tr>
     <tr><td>Hook fee</td><td>1%</td><td>both (in ETH)</td><td>vault treasury</td></tr>
     <tr><td>Leverage open fee</td><td>0.5%</td><td>open only</td><td>vault treasury</td></tr>
     <tr><td>Liquidation bounty</td><td>1% (cap 0.01 Ξ)</td><td>liquidate</td><td>liquidator</td></tr>
+    <tr><td>Trigger bounty</td><td>0.1% (cap 0.001 Ξ)</td><td>SL/TP close</td><td>caller</td></tr>
   </table>
   <p>
     Plain spot traders pay 2% per swap (1% LP + 1% hook). Leverage traders additionally pay 0.5% on
     open. There are no funding rates, no interest accrual, no time-based decay.
   </p>
 
-  <h2 id="addresses">08 · Deployed Addresses</h2>
+  <h2 id="addresses">09 · Deployed Addresses</h2>
   <p>All on Ethereum mainnet:</p>
   <table>
     <tr><th>contract</th><th>address</th></tr>
-    <tr><td>Ris3Token</td><td class="addr">0xC5f8fA2EfA5034538223553997e5659d89398557</td></tr>
-    <tr><td>Ris3LeverageVaultV2</td><td class="addr">0xE58991f4B2D4C0Cb5A868Bfc3B7809DCB5b64310</td></tr>
-    <tr><td>Ris3EthFeeHook</td><td class="addr">0x37cE11629BEf903862327B5F6864DB04222A00CC</td></tr>
+    <tr><td>Ris3Token</td><td class="addr">0x7879DD221a731a5c314E65145188d55f039dBccc</td></tr>
+    <tr><td>Ris3LeverageVaultV3</td><td class="addr">0x5017993FdDA171E79054f5d7823Cb344277F9f20</td></tr>
+    <tr><td>Ris3EthFeeHook</td><td class="addr">0xEc08AFbDb3366921bB36571e1a5A4A1AaE0e40cc</td></tr>
     <tr><td>Uniswap V4 PoolManager</td><td class="addr">0x000000000004444c5dc75cB358380D2e3dE08A90</td></tr>
     <tr><td>Universal Router (V4)</td><td class="addr">0x66a9893cC07D91D95644AEDD05D03f95e1dBA8Af</td></tr>
   </table>

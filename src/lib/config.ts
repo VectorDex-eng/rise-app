@@ -10,10 +10,10 @@
 
 import { mainnet } from 'wagmi/chains'
 
-// === V11 deployment addresses (1.4x liq threshold, fresh deployer) ===
-export const RIS3_TOKEN_MAINNET   = '0xC5f8fA2EfA5034538223553997e5659d89398557' as const
-export const RIS3_VAULT_MAINNET   = '0xE58991f4B2D4C0Cb5A868Bfc3B7809DCB5b64310' as const
-export const RIS3_HOOK_MAINNET    = '0x37cE11629BEf903862327B5F6864DB04222A00CC' as const
+// === V13 deployment addresses (SL/TP triggers, liquidate slippage protection, exact-out hook fees) ===
+export const RIS3_TOKEN_MAINNET   = '0x7879DD221a731a5c314E65145188d55f039dBccc' as const
+export const RIS3_VAULT_MAINNET   = '0x5017993FdDA171E79054f5d7823Cb344277F9f20' as const
+export const RIS3_HOOK_MAINNET    = '0xEc08AFbDb3366921bB36571e1a5A4A1AaE0e40cc' as const
 
 // === Uniswap V4 mainnet infra ===
 export const POOL_MANAGER_MAINNET     = '0x000000000004444c5dc75cB358380D2e3dE08A90' as const
@@ -26,7 +26,7 @@ export const POOL_TICK_SPACING = 60
 
 // === Pool ID = keccak256(abi.encode(currency0, currency1, fee, tickSpacing, hooks)) ===
 // Computed off-chain for the V10 pool.
-export const POOL_ID_MAINNET = '0xc0932ab6474a087908d8c031775fafa64cb57cd9ad04808c2b0969aedd366a17' as const
+export const POOL_ID_MAINNET = '0xdfc4ee4a24729fcf032917b5155bd7754407578e121c3e8234aa2c7b6be5340a' as const
 
 // === Network ===
 export const DEFAULT_CHAIN_ID: number = mainnet.id

@@ -1,4 +1,4 @@
-// Minimal ABI for Ris3LeverageVaultV2 — only the surface the frontend needs.
+// Minimal ABI for Ris3LeverageVaultV3 — surface used by the frontend.
 export const ris3VaultAbi = [
   // ─── reads ───
   {
@@ -29,6 +29,8 @@ export const ris3VaultAbi = [
       { name: 'openBlock', type: 'uint64' },
       { name: 'collateral', type: 'uint128' },
       { name: 'debt', type: 'uint128' },
+      { name: 'slSqrtPriceX96', type: 'uint160' },
+      { name: 'tpSqrtPriceX96', type: 'uint160' },
     ],
   },
   {
@@ -45,6 +47,8 @@ export const ris3VaultAbi = [
     inputs: [
       { name: 'leverage', type: 'uint8' },
       { name: 'minCollateral', type: 'uint256' },
+      { name: 'slSqrtPriceX96', type: 'uint160' },
+      { name: 'tpSqrtPriceX96', type: 'uint160' },
     ],
     outputs: [{ name: 'id', type: 'uint256' }],
   },
@@ -57,8 +61,25 @@ export const ris3VaultAbi = [
     outputs: [{ name: 'toUser', type: 'uint256' }],
   },
   {
-    name: 'liquidate', type: 'function', stateMutability: 'nonpayable',
+    name: 'closeOnTrigger', type: 'function', stateMutability: 'nonpayable',
     inputs: [{ name: 'id', type: 'uint256' }],
+    outputs: [{ name: 'toUser', type: 'uint256' }],
+  },
+  {
+    name: 'setTriggers', type: 'function', stateMutability: 'nonpayable',
+    inputs: [
+      { name: 'id', type: 'uint256' },
+      { name: 'slSqrtPriceX96', type: 'uint160' },
+      { name: 'tpSqrtPriceX96', type: 'uint160' },
+    ],
+    outputs: [],
+  },
+  {
+    name: 'liquidate', type: 'function', stateMutability: 'nonpayable',
+    inputs: [
+      { name: 'id', type: 'uint256' },
+      { name: 'minProceeds', type: 'uint256' },
+    ],
     outputs: [{ name: 'bounty', type: 'uint256' }],
   },
   {
@@ -85,12 +106,32 @@ export const ris3VaultAbi = [
     ],
   },
   {
+    name: 'TriggersSet', type: 'event', anonymous: false,
+    inputs: [
+      { name: 'id', type: 'uint256', indexed: true },
+      { name: 'slSqrtPriceX96', type: 'uint160', indexed: false },
+      { name: 'tpSqrtPriceX96', type: 'uint160', indexed: false },
+    ],
+  },
+  {
     name: 'Closed', type: 'event', anonymous: false,
     inputs: [
       { name: 'id', type: 'uint256', indexed: true },
       { name: 'user', type: 'address', indexed: true },
       { name: 'proceeds', type: 'uint256', indexed: false },
       { name: 'toUser', type: 'uint256', indexed: false },
+    ],
+  },
+  {
+    name: 'ClosedOnTrigger', type: 'event', anonymous: false,
+    inputs: [
+      { name: 'id', type: 'uint256', indexed: true },
+      { name: 'triggerer', type: 'address', indexed: true },
+      { name: 'user', type: 'address', indexed: true },
+      { name: 'slHit', type: 'bool', indexed: false },
+      { name: 'proceeds', type: 'uint256', indexed: false },
+      { name: 'toUser', type: 'uint256', indexed: false },
+      { name: 'bounty', type: 'uint256', indexed: false },
     ],
   },
   {
