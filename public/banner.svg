@@ -29,14 +29,14 @@
         font-size="28"
         letter-spacing="8"
         text-anchor="middle"
-        fill="#888888">LONG · LEVERED · ONCHAIN</text>
+        fill="#ffffff">LONG · LEVERED · ONCHAIN</text>
 
   <!-- footer line + url -->
-  <line x1="200" y1="410" x2="1300" y2="410" stroke="#1a1a1a" stroke-width="1"/>
+  <line x1="200" y1="410" x2="1300" y2="410" stroke="#2a2a2a" stroke-width="1"/>
   <text x="750" y="445"
         font-family="'DejaVu Sans Mono', monospace"
         font-size="16"
         letter-spacing="6"
         text-anchor="middle"
-        fill="#555555">UNISWAP V4 · MAINNET · ris3.xyz</text>
+        fill="#ffffff">UNISWAP V4 · MAINNET · ris3.xyz</text>
 </svg>
