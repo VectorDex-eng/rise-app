@@ -192,7 +192,6 @@
       <li><a href="#mechanics">Position mechanics</a></li>
       <li><a href="#liquidation">Liquidation</a></li>
       <li><a href="#fees">Fee structure</a></li>
-      <li><a href="#risks">Known risks</a></li>
       <li><a href="#addresses">Deployed addresses</a></li>
     </ol>
   </div>
@@ -357,20 +356,7 @@
     open. There are no funding rates, no interest accrual, no time-based decay.
   </p>
 
-  <h2 id="risks">08 · Known Risks</h2>
-  <div class="box warn">
-    The contracts are unaudited. They have been tested on mainnet with small positions across deposit,
-    withdraw, open, close, and liquidate paths. Do not deposit more than you can afford to lose.
-  </div>
-  <ul>
-    <li><strong>Flash-crash liquidation lag:</strong> If price drops past the 1.4× threshold faster than liquidators can react, the treasury can absorb a loss. The 1.4× buffer was chosen to mitigate this but cannot eliminate it.</li>
-    <li><strong>Treasury custody risk:</strong> The vault owner can withdraw their treasury (subject to <code>availableTreasury</code>). They cannot pull ETH actively backing open positions, but they can drain unused capital. This is by design — the owner provides the lending capital and must be able to recover it.</li>
-    <li><strong>Hook fee dust:</strong> ETH that arrives at the vault during its own internal swaps (open/close/liquidate) is not auto-accounted in <code>treasuryEth</code>. The <code>sync()</code> function reconciles this — anyone can call it.</li>
-    <li><strong>LP NFT ownership:</strong> The deployer holds the V4 LP NFT and can call <code>decreaseLiquidity</code> to withdraw. The recommended post-launch action is to send the NFT to <code>0xdead</code> or a timelock contract to lock LP permanently.</li>
-    <li><strong>Pool drain edge case:</strong> If the LP gets pushed entirely to one side (e.g. all ris3 sold to buyers, only ETH remains), close/liquidate of remaining positions may revert because there's no token to sell into. This is a memecoin-launch edge case, not a normal-trading concern.</li>
-  </ul>
-
-  <h2 id="addresses">09 · Deployed Addresses</h2>
+  <h2 id="addresses">08 · Deployed Addresses</h2>
   <p>All on Ethereum mainnet:</p>
   <table>
     <tr><th>contract</th><th>address</th></tr>
