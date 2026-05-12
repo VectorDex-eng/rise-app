@@ -407,13 +407,13 @@ function BurnTab({ pool, address, slippage, setSlippage, configured, disabled, c
   return (
     <>
       <div className="input-row">
-        <div className="lab">rise in</div>
+        <div className="lab">ris3 in</div>
         <input className="amount" inputMode="decimal" placeholder="0.0" value={input}
                onChange={e => { setInput(e.target.value); reset() }} />
         <div className="denom">RIS3</div>
       </div>
       <div className="input-aux">
-        <span className="balance">bal <strong>{formatRise(riseBalance, 2)}</strong> RISE</span>
+        <span className="balance">bal <strong>{formatRise(riseBalance, 2)}</strong> RIS3</span>
         <button className="max" onClick={() => setInput(formatRise(riseBalance, 6))}>MAX</button>
       </div>
 
@@ -518,10 +518,10 @@ function OpenTab({ pool, address, slippage, setSlippage, configured, disabled, c
       {quote && ethIn !== null && ethIn > 0n && (
         <div className="quote">
           <div className="qr"><span className="qk">exposure</span><span className="qv acc">{formatEth(quote.curveImpact, 4)} <span className="unit">Ξ</span></span></div>
-          <div className="qr"><span className="qk">entry px</span><span className="qv">{priceQuote ? priceQuote.entryPrice.toExponential(3) : '—'} <span className="unit">Ξ/RISE</span></span></div>
+          <div className="qr"><span className="qk">entry px</span><span className="qv">{priceQuote ? priceQuote.entryPrice.toExponential(3) : '—'} <span className="unit">Ξ/RIS3</span></span></div>
           <div className="qr"><span className="qk">collateral</span><span className="qv">{formatRise(quote.collateral)} <span className="unit">RIS3</span></span></div>
           <div className="qr"><span className="qk">debt</span><span className="qv">{formatEth(quote.debt, 4)} <span className="unit">Ξ</span></span></div>
-          <div className="qr"><span className="qk">liq px</span><span className="qv red">{priceQuote ? priceQuote.liqPrice.toExponential(3) : '—'} <span className="unit">Ξ/RISE</span></span></div>
+          <div className="qr"><span className="qk">liq px</span><span className="qv red">{priceQuote ? priceQuote.liqPrice.toExponential(3) : '—'} <span className="unit">Ξ/RIS3</span></span></div>
           <div className="qr"><span className="qk">drop to liq</span><span className="qv red">{priceQuote ? priceQuote.liqDropPct.toFixed(1) + '%' : '—'}</span></div>
           <div className="qr"><span className="qk">min coll (slip)</span><span className="qv">
             {formatRise(minCollateral)} <span className="unit">RIS3</span>

@@ -165,9 +165,9 @@ export function Cascade() {
             <span className="num">06</span>
           </div>
           <div className="right">
-            <em>What kills naive leverage AMMs.</em> What rise <span className="acc">structurally prevents.</span>
+            <em>What kills naive leverage AMMs.</em> What ris3 <span className="acc">structurally prevents.</span>
             <div className="sect-sub">
-              Liquidation cascades killed Mango ($100M). Rise's redemption pool routes confiscated collateral <em>out of the curve</em> — adjacent positions don't trigger from a single liquidation. Watch what happens when 5 positions liquidate at once.
+              Liquidation cascades killed Mango ($100M). ris3's redemption pool routes confiscated collateral <em>out of the curve</em> — adjacent positions don't trigger from a single liquidation. Watch what happens when 5 positions liquidate at once.
             </div>
           </div>
         </div>
