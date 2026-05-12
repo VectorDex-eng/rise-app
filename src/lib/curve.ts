@@ -6,7 +6,7 @@
  * the contract. We slippage-protect against quote drift via minCollateral /
  * minProceeds parameters.
  *
- * Reference: docs/leverage-v1.md §3
+ * Reference: yellow paper 
  */
 
 import { K_CONST, V_ETH, LIQ_THRESHOLD_BPS } from './config'

@@ -2,9 +2,11 @@ export function Banner() {
   return (
     <div className="banner">
       <div className="banner-inner">
-        <span className="banner-tag">audited · v1</span>
+        <span className="banner-tag">no admin keys</span>
         <span>
-          <strong>Independently audited</strong> with <em>no critical or high severity findings.</em> Live-validated end-to-end including liquidation flow. 60 tests passing · 3,000 fuzz runs of K-invariance. Source on Etherscan. <a href="/paper.html">Read the math</a> before committing capital.
+          Three contracts, all <strong>immutable on Ethereum mainnet</strong>: ris3 token, V4 fee hook,
+          leverage vault. <em>No upgradability.</em> <em>No pause function.</em> Source verifiable on
+          Etherscan. <a href="/paper.html">Read the spec</a> before committing capital.
         </span>
       </div>
     </div>

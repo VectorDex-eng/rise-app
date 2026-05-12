@@ -20,8 +20,6 @@ export default function App() {
         <section className="hero" style={{ borderBottom: 'none' }}>
           <div className="hero-l">
             <div className="hero-meta">
-              <span className="badge">v1</span>
-              <span className="div"></span>
               <span>uniswap v4 · mainnet</span>
             </div>
 

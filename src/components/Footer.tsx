@@ -40,7 +40,7 @@ export function Footer() {
         </div>
       </div>
       <div className="foot-bottom">
-        <div>$RIS3 v1 · plain ERC20 + V4 fee hook + leverage vault · no admin keys</div>
+        <div>$RIS3 · plain ERC20 + V4 fee hook + leverage vault · no admin keys</div>
         <div className="sig"><em>token + leverage. up to 3x.</em></div>
       </div>
     </footer>

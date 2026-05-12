@@ -5,9 +5,9 @@ import { useActiveSection } from '../hooks/useReveal'
 
 const navLinks = [
   { href: '#mechanism', id: 'mechanism', label: 'mechanism' },
-  { href: '#k-invariant', id: 'k-invariant', label: 'K invariant' },
-  { href: '#cascade', id: 'cascade', label: 'cascade' },
-  { href: '#scenarios', id: 'scenarios', label: 'scenarios' },
+  { href: '#parameters', id: 'parameters', label: 'parameters' },
+  { href: '#liquidation', id: 'liquidation', label: 'liquidation' },
+  { href: '#stack', id: 'stack', label: 'stack' },
 ]
 
 export function TopBar() {
@@ -40,7 +40,7 @@ export function TopBar() {
       <header className={`topbar ${scrolled ? 'scrolled' : ''}`}>
         <div className="topbar-inner">
           <a href="#" className="brand" style={{ textDecoration: 'none' }}>
-            <span className="sigil">$</span>RIS3<span className="v">v1</span>
+            <span className="sigil">$</span>RIS3
           </a>
           <nav className="topnav">
             {navLinks.map(l => (
@@ -51,7 +51,7 @@ export function TopBar() {
             <a href="/paper.html">paper ↗</a>
           </nav>
           <div className="top-right">
-            <span className="net-pill">testnet · {chainName(DEFAULT_CHAIN_ID)}</span>
+            <span className="net-pill">{chainName(DEFAULT_CHAIN_ID)}</span>
             <ConnectKitButton.Custom>
               {({ isConnected, show, truncatedAddress }) => (
                 <button
