@@ -270,7 +270,7 @@ export function Cascade() {
           <div className="cas-proof">
             <div className="cas-proof-head">
               <span className="cas-proof-badge">[ VERIFIED ON-CHAIN ]</span>
-              <span className="cas-proof-test">test_Adversarial_FullCascade_5Positions · sepolia</span>
+              <span className="cas-proof-test">test_Adversarial_FullCascade_5Positions</span>
             </div>
             <div className="cas-proof-grid">
               <ProofRow k="positions opened"      v="5 × 3×"        sub="0.1 Ξ each" />

@@ -4,9 +4,7 @@ export function ContractBar() {
   const chainId = DEFAULT_CHAIN_ID
   const addr = riseTokenAddressFor(chainId)
   const configured = isHookConfigured(chainId)
-  const explorer = chainId === 1
-    ? `https://etherscan.io/address/${addr}`
-    : `https://sepolia.etherscan.io/address/${addr}`
+  const explorer = `https://etherscan.io/address/${addr}`
 
   const copy = () => {
     if (configured) navigator.clipboard?.writeText(addr).catch(() => {})

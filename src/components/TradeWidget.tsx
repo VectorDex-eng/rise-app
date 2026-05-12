@@ -6,13 +6,15 @@ import {
 import { useQueryClient } from '@tanstack/react-query'
 import { riseHookAbi } from '../abi/RiseLeverageHook'
 import { riseTokenAbi } from '../abi/RiseToken'
-import { poolSwapTestAbi } from '../abi/PoolSwapTest'
+import { universalRouterAbi } from '../abi/UniversalRouter'
+import { permit2Abi } from '../abi/Permit2'
 import {
   hookAddressFor, isHookConfigured, chainName, DEFAULT_CHAIN_ID,
   SLIPPAGE_PRESETS, DEFAULT_SLIPPAGE_BPS, MIN_POSITION, LEVERAGE_TIERS,
-  riseTokenAddressFor, POOL_SWAP_TEST_SEPOLIA, TOTAL_SUPPLY,
+  riseTokenAddressFor, universalRouterFor, PERMIT2, TOTAL_SUPPLY,
   GAS_RESERVE_WEI, MIN_TRADE_ETH_WEI,
 } from '../lib/config'
+import { encodeV4SwapExactIn, swapDeadline } from '../lib/v4SwapEncoder'
 import {
   quoteBuyGross, quoteSellGross, quoteOpen, quoteClose,
   applySlippage, applyFee, formatEth, formatRise, parseEth,
@@ -243,9 +245,7 @@ function TxStatus({ hash, isPending, isConfirming, isSuccess, error, chainId }: 
   }
   if (isPending) return <div className="status-msg pending">awaiting wallet signature…</div>
   if (isConfirming) {
-    const url = chainId === 1
-      ? `https://etherscan.io/tx/${hash}`
-      : `https://sepolia.etherscan.io/tx/${hash}`
+    const url = `https://etherscan.io/tx/${hash}`
     return (
       <div className="status-msg pending">
         confirming on-chain…
@@ -254,9 +254,7 @@ function TxStatus({ hash, isPending, isConfirming, isSuccess, error, chainId }: 
     )
   }
   if (isSuccess) {
-    const url = chainId === 1
-      ? `https://etherscan.io/tx/${hash}`
-      : `https://sepolia.etherscan.io/tx/${hash}`
+    const url = `https://etherscan.io/tx/${hash}`
     return (
       <div className="status-msg success">
         confirmed
@@ -271,7 +269,6 @@ function TxStatus({ hash, isPending, isConfirming, isSuccess, error, chainId }: 
 // MINT — unleveraged buy
 // ─────────────────────────────────────────────────────────────
 function MintTab({ pool, address, slippage, setSlippage, configured, disabled, chainId }: any) {
-  const hookAddress = hookAddressFor(chainId)
   const { watchAsset } = useWatchAsset()
   const { data: ethBalance } = useBalance({ address, chainId })
   const [input, setInput] = useState('')
@@ -289,16 +286,14 @@ function MintTab({ pool, address, slippage, setSlippage, configured, disabled, c
 
   const onMint = () => {
     if (!ethIn || !configured) return
+    const { commands, inputs } = encodeV4SwapExactIn({
+      chainId, zeroForOne: true, amountIn: ethIn, amountOutMin: minOut,
+    })
     writeContract({
-      address: POOL_SWAP_TEST_SEPOLIA,
-      abi: poolSwapTestAbi,
-      functionName: 'swap',
-      args: [
-        { currency0: '0x0000000000000000000000000000000000000000', currency1: riseTokenAddressFor(chainId), fee: 10000, tickSpacing: 60, hooks: hookAddress },
-        { zeroForOne: true, amountSpecified: -ethIn, sqrtPriceLimitX96: 4295128740n },
-        { takeClaims: false, settleUsingBurn: false },
-        '0x',
-      ],
+      address: universalRouterFor(chainId),
+      abi: universalRouterAbi,
+      functionName: 'execute',
+      args: [commands, inputs, swapDeadline()],
       value: ethIn,
       chainId,
     })
@@ -350,22 +345,39 @@ function MintTab({ pool, address, slippage, setSlippage, configured, disabled, c
 // ─────────────────────────────────────────────────────────────
 // BURN — unleveraged sell
 // ─────────────────────────────────────────────────────────────
+// Sell path uses Universal Router + Permit2. Two-step grant:
+//   1. ERC20.approve(Permit2, max)                         — one-time per token per wallet
+//   2. Permit2.approve(RIS3, UniversalRouter, max, exp)    — one-time per (token, spender) tuple
+// Both are infinite-allowance + far-future expiration so the user only ever signs them once.
 function BurnTab({ pool, address, slippage, setSlippage, configured, disabled, chainId }: any) {
-  const hookAddress = hookAddressFor(chainId)
   const { watchAsset } = useWatchAsset()
   const [input, setInput] = useState('')
 
+  const ris3 = riseTokenAddressFor(chainId)
+  const router = universalRouterFor(chainId)
+
   const { data: _rb } = useReadContract({
-    address: riseTokenAddressFor(chainId), abi: riseTokenAbi, functionName: 'balanceOf',
+    address: ris3, abi: riseTokenAbi, functionName: 'balanceOf',
     args: address ? [address] : undefined, chainId, query: { enabled: !!address, refetchInterval: 12_000 },
   })
   const riseBalance = ((_rb ?? 0n) as bigint)
 
-  const { data: _al, refetch: refetchAllowance } = useReadContract({
-    address: riseTokenAddressFor(chainId), abi: riseTokenAbi, functionName: 'allowance',
-    args: address ? [address, POOL_SWAP_TEST_SEPOLIA] : undefined, chainId, query: { enabled: !!address },
+  // (1) ERC20 allowance: owner → Permit2
+  const { data: _erc20Al, refetch: refetchErc20Allowance } = useReadContract({
+    address: ris3, abi: riseTokenAbi, functionName: 'allowance',
+    args: address ? [address, PERMIT2] : undefined, chainId, query: { enabled: !!address },
   })
-  const allowance = ((_al ?? 0n) as bigint)
+  const erc20Allowance = ((_erc20Al ?? 0n) as bigint)
+
+  // (2) Permit2 allowance: (owner, RIS3, UR) → (amount, expiration, nonce)
+  const { data: _p2Al, refetch: refetchPermit2Allowance } = useReadContract({
+    address: PERMIT2, abi: permit2Abi, functionName: 'allowance',
+    args: address ? [address, ris3, router] : undefined, chainId, query: { enabled: !!address },
+  })
+  const permit2Amount    = ((_p2Al as any)?.[0] ?? 0n) as bigint
+  const permit2Expiry    = Number((_p2Al as any)?.[1] ?? 0n)
+  const nowSec           = Math.floor(Date.now() / 1000)
+  const permit2Sufficient = (amt: bigint) => permit2Amount >= amt && permit2Expiry > nowSec
 
   const riseIn = useMemo(() => parseEth(input), [input])
   const grossOut = useMemo(() => (riseIn && riseIn > 0n)
@@ -373,36 +385,59 @@ function BurnTab({ pool, address, slippage, setSlippage, configured, disabled, c
   const netOut = useMemo(() => applyFee(grossOut), [grossOut])
   const minOut = useMemo(() => applySlippage(netOut, slippage), [netOut, slippage])
 
-  const needsApprove = riseIn !== null && riseIn > 0n && allowance < riseIn
+  const needsErc20Approve  = riseIn !== null && riseIn > 0n && erc20Allowance < riseIn
+  const needsPermit2Approve = riseIn !== null && riseIn > 0n && !needsErc20Approve && !permit2Sufficient(riseIn)
 
   const { writeContract, data: hash, isPending, error, reset } = useWriteContract()
   const { isLoading: isConfirming, isSuccess } = useWaitForTransactionReceipt({ hash, chainId })
   const qc = useQueryClient()
-  useEffect(() => { if (isSuccess) { qc.invalidateQueries(); refetchAllowance() } }, [isSuccess, qc, refetchAllowance])
+  useEffect(() => {
+    if (isSuccess) {
+      qc.invalidateQueries()
+      refetchErc20Allowance()
+      refetchPermit2Allowance()
+    }
+  }, [isSuccess, qc, refetchErc20Allowance, refetchPermit2Allowance])
 
-  const onApprove = () => writeContract({
-    address: riseTokenAddressFor(chainId), abi: riseTokenAbi, functionName: 'approve',
-    args: [POOL_SWAP_TEST_SEPOLIA, 2n ** 256n - 1n], chainId,
+  // Step 1: token → Permit2 (max approval)
+  const onApproveErc20 = () => writeContract({
+    address: ris3, abi: riseTokenAbi, functionName: 'approve',
+    args: [PERMIT2, 2n ** 256n - 1n], chainId,
   })
 
+  // Step 2: Permit2 → UR. amount is uint160 max, expiration ~30 days out.
+  const onApprovePermit2 = () => writeContract({
+    address: PERMIT2, abi: permit2Abi, functionName: 'approve',
+    args: [ris3, router, (2n ** 160n - 1n), Math.floor(Date.now() / 1000) + 30 * 24 * 60 * 60],
+    chainId,
+  })
+
+  // Step 3: swap via UR.
   const onBurn = () => {
     if (!riseIn || !configured) return
+    const { commands, inputs } = encodeV4SwapExactIn({
+      chainId, zeroForOne: false, amountIn: riseIn, amountOutMin: minOut,
+    })
     writeContract({
-      address: POOL_SWAP_TEST_SEPOLIA, abi: poolSwapTestAbi, functionName: 'swap',
-      args: [
-        { currency0: '0x0000000000000000000000000000000000000000', currency1: riseTokenAddressFor(chainId), fee: 10000, tickSpacing: 60, hooks: hookAddress },
-        { zeroForOne: false, amountSpecified: -riseIn, sqrtPriceLimitX96: 1461446703485210103287273052203988822378723970341n },
-        { takeClaims: false, settleUsingBurn: false },
-        '0x',
-      ],
-      chainId,
+      address: router, abi: universalRouterAbi, functionName: 'execute',
+      args: [commands, inputs, swapDeadline()], chainId,
     })
   }
 
-  // Token side: 1 RISE = 1e18. Use 0.001 RISE as a soft dust floor (contract floor is 1 RISE).
+  // 1 RIS3 = 1e18. Soft dust floor 0.001 RIS3.
   const tooSmall    = riseIn !== null && riseIn > 0n && riseIn < 10n ** 15n
   const insufficient = riseIn !== null && riseIn > riseBalance
   const canSubmit   = !disabled && configured && riseIn !== null && riseIn > 0n && !tooSmall && !insufficient && !isPending && !isConfirming
+
+  const action = needsErc20Approve ? onApproveErc20 : needsPermit2Approve ? onApprovePermit2 : onBurn
+  const actionLabel =
+      tooSmall                ? 'too small'
+    : insufficient            ? 'insufficient RIS3'
+    : isPending               ? 'sign in wallet…'
+    : isConfirming            ? 'confirming…'
+    : needsErc20Approve       ? '1/2  Approve RIS3'
+    : needsPermit2Approve     ? '2/2  Permit2 grant'
+    :                           'Burn RIS3'
 
   return (
     <>
@@ -428,13 +463,8 @@ function BurnTab({ pool, address, slippage, setSlippage, configured, disabled, c
 
       <SlippageRow value={slippage} onChange={setSlippage} />
 
-      <button className={`action-btn side-sell`} disabled={!canSubmit} onClick={needsApprove ? onApprove : onBurn}>
-        {tooSmall ? 'too small'
-          : insufficient ? 'insufficient RIS3'
-          : isPending ? 'sign in wallet…'
-          : isConfirming ? 'confirming…'
-          : needsApprove ? 'Approve RIS3'
-          : 'Burn RIS3'}
+      <button className={`action-btn side-sell`} disabled={!canSubmit} onClick={action}>
+        {actionLabel}
         {canSubmit && <span className="arrow">&gt;&gt;</span>}
       </button>
 
