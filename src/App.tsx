@@ -28,14 +28,14 @@ export default function App() {
             </div>
 
             <h1 className="headline">
-              <span className="em">ris3</span>
+              Long.
               <br />
-              Up to <span className="x">3x</span>
+              Levered. <span className="em">Onchain</span>
               <span className="dot"></span>
             </h1>
 
             <p className="hero-tagline">
-              A token with built-in leverage. <em>Buy ris3 like any ERC20</em> — or open a 2× / 3× position via the on-chain vault. <strong>The vault provides the debt.</strong> You provide the conviction.
+              <strong>A token with a vault behind it.</strong> Trade ris3 plain like any V4 token — or open <em>2× / 3×</em> against vault ETH. Same pool, same chart, real LP.
             </p>
 
             <div className="hero-actions">
